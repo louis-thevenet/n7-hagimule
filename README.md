@@ -27,3 +27,5 @@ source /etc/profile.d/maven.sh
 echo maven installed to ${install_dir}
 mvn --version
 ```
+
+https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.tar.gz
