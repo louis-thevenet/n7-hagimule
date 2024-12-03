@@ -8,8 +8,11 @@ mvn package
 # Start Server
 java -cp ./diary/target/daemon-1.0-SNAPSHOT.jar hagimule.App
 
-# Run Client
+# Start Daemnon
 java -cp ./daemon/target/daemon-1.0-SNAPSHOT.jar hagimule.App
+
+# Run Client
+java -cp ./downloader/target/downloader-1.0-SNAPSHOT.jar hagimule.App
 ```
 
 ## Archi
