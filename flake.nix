@@ -16,12 +16,13 @@
         inputs.treefmt-nix.flakeModule
       ];
       perSystem =
-        { config
-        , self'
-        , pkgs
-        , lib
-        , system
-        , ...
+        {
+          config,
+          self',
+          pkgs,
+          lib,
+          system,
+          ...
         }:
         let
           buildInputs = with pkgs; [ ];
@@ -29,9 +30,7 @@
         in
         {
           # Rust package
-          packages.default =
-            pkgs.mkDerivation
-              rec { };
+          packages.default = pkgs.mkDerivation rec { };
 
           # Rust dev environment
           devShells.default = pkgs.mkShell {
@@ -45,6 +44,7 @@
               ++ (with pkgs; [
                 jdk21
                 gradle
+                just
               ]);
           };
 
