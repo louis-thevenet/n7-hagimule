@@ -4,7 +4,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-public interface DiaryDownLoader extends Remote {
+public interface DiaryDownloader extends Remote {
     /**
      * Get the names of the Hosts who get the file.
      * @param file the filename wanted

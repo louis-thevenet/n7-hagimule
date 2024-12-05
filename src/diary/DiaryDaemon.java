@@ -8,7 +8,7 @@ import java.rmi.RemoteException;
  * the machines that own them. When a file request is sent, 
  * the requester receives a list of the machines that own it.
  */
-public interface DiaryDeamon extends Remote {
+public interface DiaryDaemon extends Remote {
 
     /**
      * Register a fie into the Diary.
