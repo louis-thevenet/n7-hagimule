@@ -4,7 +4,7 @@ import java.io.File;
 import java.rmi.RemoteException;
 
 /**
- * Daemon
+ * Daemon that registers available files and answers Download requests.
  */
 public class Daemon implements FileProvider {
 

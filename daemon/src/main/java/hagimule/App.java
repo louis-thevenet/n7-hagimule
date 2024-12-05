@@ -5,26 +5,56 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-public class App {
-  static final int default_port = 1000;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
-  static String get_files_path(String[] args) {
-    String available_files_path;
-    if (args.length >= 1) {
-      available_files_path = args[0];
-    } else {
-      String home = System.getProperty("user.home");
-      available_files_path = home + "/Downloads/";
-    }
-    return available_files_path;
+public class App {
+  static String home_dir = System.getProperty("user.home");
+  static String default_files_path = home_dir + "/Downloads/";
+  static final int default_port = 8081;
+
+  static Options create_options() {
+    Options options = new Options();
+
+    Option help = new Option("h", "help", false, "Print this help message");
+    Option pathOpt = new Option("p", "path", true, "Path to files to make available");
+    Option portOpt = new Option("port", true, "Port to use");
+
+    options.addOption(help);
+    options.addOption(pathOpt);
+    options.addOption(portOpt);
+    return options;
 
   }
 
-  static int get_port(String[] args) {
+  static CommandLine handle_cli(String[] args) throws ParseException {
+    Options options = create_options();
+
+    CommandLineParser parser = new DefaultParser();
+    CommandLine cmd = parser.parse(options, args);
+    return cmd;
+  }
+
+  static String get_files_path(CommandLine cmd) {
+    String available_files_path;
+    if (cmd.hasOption("path")) {
+      available_files_path = cmd.getOptionValue("path");
+    } else {
+      available_files_path = default_files_path;
+    }
+    return available_files_path;
+  }
+
+  static int get_port(CommandLine cmd) {
     int port = default_port;
-    if (args.length >= 2) {
+    if (cmd.hasOption("port")) {
       try {
-        port = Integer.parseInt(args[1]);
+        port = Integer.parseInt(cmd.getOptionValue("port"));
       } catch (Exception e) {
 
       }
@@ -34,8 +64,25 @@ public class App {
   }
 
   public static void main(String[] args) {
-    Daemon daemon = new Daemon(get_files_path(args));
-    int port = get_port(args);
+    CommandLine cmd = null;
+    try {
+      cmd = handle_cli(args);
+    } catch (ParseException exp) {
+      System.err.println("Parsing failed.  Reason: " + exp.getMessage());
+      HelpFormatter formatter = new HelpFormatter();
+      formatter.printHelp("daemon", create_options());
+      System.exit(-1);
+    }
+
+    // Print help message
+    if (cmd.hasOption("help")) {
+      HelpFormatter formatter = new HelpFormatter();
+      formatter.printHelp("daemon", create_options());
+      return;
+    }
+
+    Daemon daemon = new Daemon(get_files_path(cmd));
+    int port = get_port(cmd);
 
     daemon.notify_diary();
     try {
