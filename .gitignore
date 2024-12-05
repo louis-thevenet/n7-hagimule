@@ -18,4 +18,4 @@ buildNumber.properties
 .direnv/
 .settings/
 # Compiled file
-.class
+*.class
