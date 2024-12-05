@@ -26,7 +26,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownLoader, D
         }
         return ret;
     }
-    
+
     @Override
     public void registerFile(String ip, String file)
         throws RemoteException {
@@ -62,7 +62,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownLoader, D
 
 
             // Create a instance of the server object
-            Diary obj = new DiaryImpl();
+            DiaryImpl obj = new DiaryImpl();
 
             URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + portDeamon + "/my_server";
             // Register the object with the naming service
