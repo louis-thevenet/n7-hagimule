@@ -1,4 +1,3 @@
-package hagimule;
 
 import java.io.File;
 import java.rmi.RemoteException;
