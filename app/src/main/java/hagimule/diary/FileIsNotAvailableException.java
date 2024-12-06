@@ -1,4 +1,4 @@
-
+package hagimule.diary;
 
 public class FileIsNotAvailableException extends Exception {
 

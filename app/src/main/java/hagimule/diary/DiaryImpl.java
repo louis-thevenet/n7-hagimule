@@ -1,3 +1,5 @@
+package hagimule.diary;
+
 
 import java.net.InetAddress;
 import java.rmi.Naming;

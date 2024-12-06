@@ -1,3 +1,5 @@
+package hagimule.downloader;
+
 import java.rmi.server.UnicastRemoteObject;
 import java.lang.Runnable;
 import java.util.HashMap;

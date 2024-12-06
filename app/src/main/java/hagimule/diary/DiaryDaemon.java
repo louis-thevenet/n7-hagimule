@@ -1,4 +1,4 @@
-
+package hagimule.diary;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
