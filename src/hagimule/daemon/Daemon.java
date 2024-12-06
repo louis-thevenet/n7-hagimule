@@ -1,3 +1,4 @@
+package hagimule.daemon;
 
 import java.io.File;
 import java.rmi.RemoteException;
