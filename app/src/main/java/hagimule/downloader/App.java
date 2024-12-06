@@ -1,3 +1,5 @@
+package hagimule.downloader;
+
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -165,7 +167,7 @@ public class App {
             DiaryDownloader diairy = (DiaryDownloader) Naming.lookup(ipServer);
 
             // search of Hosts of the file
-            List<Host> = new ArrayList<>();
+            List<Host> lh = new ArrayList<>();
             this.sizeOfFile = diairy.whichHosts(filename, lh);
 
             // Some hosts has been found, else FileIsNotAvailableException is raised
