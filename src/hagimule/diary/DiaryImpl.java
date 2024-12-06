@@ -1,4 +1,3 @@
-package hagimule;
 
 import java.net.InetAddress;
 import java.rmi.Naming;
@@ -10,7 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-public class DiaryImpl extends UnicastRemoteObject implements DiaryDownLoader, DiaryDeamon {
+public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, DiaryDaemon {
 
     /**Diary implementation. */
     private HashMap<String, List<Host>> impl = new HashMap<>();
@@ -42,14 +41,13 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownLoader, D
         }
     }
     
-    /** Diary is a server so he is running infinitely and produce Thread 
-     * at each demmand.*/
+    /** Diary is a server RMI.*/
     public static void main(String[] args) {
-        int portDeamon = 8081;
+        int portDaemon = 8081;
         int portDownloeader = 8082;
         String URL;
         try {
-            portDeamon = Integer.parseInt(args[0]);
+            portDaemon = Integer.parseInt(args[0]);
             portDownloeader = Integer.parseInt(args[1]);
         } catch (Exception e) {
             System.err.println("No args");
@@ -57,17 +55,17 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownLoader, D
         }
         try {
             // launching naming service
-            Registry registry1 = LocateRegistry.createRegistry(portDeamon);
+            Registry registry1 = LocateRegistry.createRegistry(portDaemon);
             Registry registry2 = LocateRegistry.createRegistry(portDownloeader);
 
 
             // Create a instance of the server object
             DiaryImpl obj = new DiaryImpl();
 
-            URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + portDeamon + "/my_server";
+            URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + portDaemon + "/my_server";
             // Register the object with the naming service
             Naming.rebind(URL, obj);
-            System.out.println("Diary bound in registry Deamon");
+            System.out.println("Diary bound in registry Daemon");
             
             URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + portDownloeader + "/my_server";
             // Register the object with the naming service
