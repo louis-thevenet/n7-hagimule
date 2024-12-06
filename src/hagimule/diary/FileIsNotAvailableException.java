@@ -1,5 +1,4 @@
 
-package hagimule;
 
 public class FileIsNotAvailableException extends Exception {
 
