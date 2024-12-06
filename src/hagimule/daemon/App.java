@@ -1,3 +1,4 @@
+package hagimule.daemon;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
