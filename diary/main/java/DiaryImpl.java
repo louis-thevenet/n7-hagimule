@@ -1,10 +1,6 @@
 package main.java;
 
-import java.net.InetAddress;
-import java.rmi.Naming;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -39,41 +35,6 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
       impl.put(file, l);
     } else {
       l.add(h);
-    }
-  }
-
-  /** Diary is a server RMI. */
-  public static void main(String[] args) {
-    int portDaemon = 8081;
-    int portDownloeader = 8082;
-    String URL;
-    try {
-      portDaemon = Integer.parseInt(args[0]);
-      portDownloeader = Integer.parseInt(args[1]);
-    } catch (Exception e) {
-      System.err.println("No args");
-      e.printStackTrace();
-    }
-    try {
-      // launching naming service
-      Registry registry1 = LocateRegistry.createRegistry(portDaemon);
-      Registry registry2 = LocateRegistry.createRegistry(portDownloeader);
-
-      // Create a instance of the server object
-      DiaryImpl obj = new DiaryImpl();
-
-      URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + portDaemon + "/my_server";
-      // Register the object with the naming service
-      Naming.rebind(URL, obj);
-      System.out.println("Diary bound in registry Daemon");
-
-      URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + portDownloeader + "/my_server";
-      // Register the object with the naming service
-      Naming.rebind(URL, obj);
-      System.out.println("Diary bound in registry Downloader");
-
-    } catch (Exception e) {
-      e.printStackTrace();
     }
   }
 }
