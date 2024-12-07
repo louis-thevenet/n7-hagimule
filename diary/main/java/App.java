@@ -4,7 +4,6 @@ import java.net.InetAddress;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -20,11 +19,18 @@ public class App {
     Options options = new Options();
 
     Option help = new Option("h", "help", false, "Print this help message");
-    Option portOpt = new Option("port", true, "Port to use");
+
+    Option diaryPortOpt = new Option("p", "port", true, "Port to use for the diary");
 
     options.addOption(help);
-    options.addOption(portOpt);
+    options.addOption(diaryPortOpt);
     return options;
+  }
+
+  static void exit_with_error(String error) {
+    System.err.println(error);
+    System.exit(-1);
+
   }
 
   public static CommandLine handle_cli(String[] args) throws ParseException {
@@ -33,17 +39,6 @@ public class App {
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd = parser.parse(options, args);
     return cmd;
-  }
-
-  public static int get_port(CommandLine cmd) {
-    int port = default_port;
-    if (cmd.hasOption("port")) {
-      try {
-        port = Integer.parseInt(cmd.getOptionValue("port"));
-      } catch (Exception e) {
-      }
-    }
-    return port;
   }
 
   public static void main(String[] args) {
@@ -63,31 +58,35 @@ public class App {
       formatter.printHelp("diary", create_options());
       return;
     }
+    int port = default_port;
+    if (cmd.hasOption("p")) {
+      try {
+        port = Integer.parseInt(cmd.getOptionValue("p"));
+      } catch (NumberFormatException e) {
+        exit_with_error(e.toString());
+      }
+    }
 
-    int port = get_port(cmd);
-
-    Registry registry;
     // launching naming service
     try {
-      registry = LocateRegistry.createRegistry(port);
+      LocateRegistry.createRegistry(port);
     } catch (RemoteException e) {
       try {
-        registry = LocateRegistry.getRegistry(port);
+        LocateRegistry.getRegistry(port);
       } catch (RemoteException e1) {
         System.err.println("Server error : can't get the register");
         e1.printStackTrace();
       }
     }
 
-    DiaryImpl diary;
+    DiaryImpl diary = null;
     try {
-      // Create a instance of the server object
       diary = new DiaryImpl();
-    } catch (Exception e) {
-      diary = null;
+    } catch (RemoteException e) {
+      exit_with_error("Couldn't initialize Diary: " + e.toString());
     }
-    try {
 
+    try {
       String URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/register";
       // Register the object with the naming service
       Naming.rebind(URL, (DiaryDaemon) diary);
