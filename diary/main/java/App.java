@@ -88,12 +88,12 @@ public class App {
     }
     try {
 
-      String URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/my_server_daemon";
+      String URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/register";
       // Register the object with the naming service
       Naming.rebind(URL, diary);
       System.out.println("Diary bound in registry Daemon");
 
-      URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/my_server_downloader";
+      URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/download";
       // Register the object with the naming service
       Naming.rebind(URL, diary);
       System.out.println("Diary bound in registry Downloader");
