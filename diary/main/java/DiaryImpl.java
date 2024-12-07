@@ -5,13 +5,20 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, DiaryDaemon {
 
   /** Diary implementation. */
   private HashMap<String, List<Host>> impl = new HashMap<>();
+  Logger logger;
+
+  public void setLogger(Logger logger) {
+    this.logger = logger;
+  }
 
   public DiaryImpl() throws RemoteException {
+    logger = java.util.logging.Logger.getLogger("Diary");
   };
 
   @Override
@@ -25,7 +32,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
 
   @Override
   public void registerFile(String ip, String file) throws RemoteException {
-    System.out.println('[' + file + ']' + " registered from " + '"' + ip + '"');
+    logger.fine('"' + ip + '"' + "\tregistered: \t" + '[' + file + ']');
     Host h = new Host(ip);
     h.addFile(file);
     List<Host> l = impl.get(file);

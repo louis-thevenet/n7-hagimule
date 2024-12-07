@@ -4,6 +4,10 @@ import java.net.InetAddress;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -19,10 +23,12 @@ public class App {
     Options options = new Options();
 
     Option help = new Option("h", "help", false, "Print this help message");
+    Option debug = new Option("d", "debug", false, "Print debug messages");
 
     Option diaryPortOpt = new Option("p", "port", true, "Port to use for the diary");
 
     options.addOption(help);
+    options.addOption(debug);
     options.addOption(diaryPortOpt);
     return options;
   }
@@ -38,15 +44,18 @@ public class App {
 
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd = parser.parse(options, args);
+
     return cmd;
   }
 
   public static void main(String[] args) {
+    Logger logger = java.util.logging.Logger.getLogger("Diary");
+
     CommandLine cmd = null;
     try {
       cmd = handle_cli(args);
     } catch (ParseException exp) {
-      System.err.println("Parsing failed.  Reason: " + exp.getMessage());
+      logger.severe("Parsing failed.  Reason: " + exp.getMessage());
       HelpFormatter formatter = new HelpFormatter();
       formatter.printHelp("diary", create_options());
       System.exit(-1);
@@ -67,6 +76,10 @@ public class App {
       }
     }
 
+    if (cmd.hasOption("d")) {
+      logger.setLevel(Level.ALL);
+    }
+
     // launching naming service
     try {
       LocateRegistry.createRegistry(port);
@@ -74,14 +87,14 @@ public class App {
       try {
         LocateRegistry.getRegistry(port);
       } catch (RemoteException e1) {
-        System.err.println("Server error : can't get the register");
-        e1.printStackTrace();
+        exit_with_error("Could not get or create registry: " + e.toString());
       }
     }
 
     DiaryImpl diary = null;
     try {
       diary = new DiaryImpl();
+      diary.setLogger(logger);
     } catch (RemoteException e) {
       exit_with_error("Couldn't initialize Diary: " + e.toString());
     }
@@ -90,15 +103,15 @@ public class App {
       String URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/register";
       // Register the object with the naming service
       Naming.rebind(URL, (DiaryDaemon) diary);
-      System.out.println("Diary bound in registry Daemon");
+
+      logger.info("Diary bound in registry Daemon");
 
       URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/request";
       // Register the object with the naming service
       Naming.rebind(URL, (DiaryDownloader) diary);
-      System.out.println("Diary bound in registry Downloader");
+      logger.info("Diary bound in registry Downloader");
     } catch (Exception e) {
-      System.err.println("Server exception: " + e.toString());
-      e.printStackTrace();
+      exit_with_error("Server exception: " + e.toString());
     }
   }
 }
