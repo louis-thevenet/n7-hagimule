@@ -18,7 +18,7 @@ buildNumber.properties
 .direnv/
 .settings/
 # Compiled file
-.class
+*.class
 # Ignore Gradle project-specific cache directory
 .gradle
 
