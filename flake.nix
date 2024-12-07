@@ -46,6 +46,7 @@
               ++ buildInputs
               ++ (with pkgs; [
                 jdk21
+                gradle
               ]);
           };
 
