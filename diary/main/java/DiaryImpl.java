@@ -29,6 +29,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
 
   @Override
   public void registerFile(String ip, String file) throws RemoteException {
+    System.out.println('[' + file + ']' + " registered from " + '"' + ip + '"');
     Host h = new Host(ip);
     h.addFile(file);
     List<Host> l = impl.get(file);
