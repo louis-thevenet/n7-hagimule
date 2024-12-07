@@ -4,7 +4,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -29,7 +28,6 @@ public class App {
     options.addOption(pathOpt);
     options.addOption(portOpt);
     return options;
-
   }
 
   static CommandLine handle_cli(String[] args) throws ParseException {
@@ -60,7 +58,6 @@ public class App {
       }
     }
     return port;
-
   }
 
   public static void main(String[] args) {
@@ -101,5 +98,4 @@ public class App {
       e.printStackTrace();
     }
   }
-
 }

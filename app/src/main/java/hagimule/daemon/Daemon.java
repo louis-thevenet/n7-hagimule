@@ -3,9 +3,7 @@ package hagimule.daemon;
 import java.io.File;
 import java.rmi.RemoteException;
 
-/**
- * Daemon that registers available files and answers Download requests.
- */
+/** Daemon that registers available files and answers Download requests. */
 public class Daemon implements FileProvider {
 
   public Daemon(String available_files_path) {
