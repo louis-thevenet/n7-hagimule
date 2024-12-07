@@ -15,19 +15,37 @@ import org.apache.commons.cli.ParseException;
 public class App {
   static String home_dir = System.getProperty("user.home");
   static String default_files_path = home_dir + "/Downloads/";
-  static final int default_port = 8081;
 
   static Options create_options() {
     Options options = new Options();
 
     Option help = new Option("h", "help", false, "Print this help message");
+    Option summaryOpt = new Option("s", "summary", false,
+        "Prints a summary of this daemon settings with current arguments");
+
     Option pathOpt = new Option("p", "path", true, "Path to files to make available");
-    Option portOpt = new Option("port", true, "Port to use");
+
+    Option daemonAddressOpt = new Option("dai", "daemon-ip", true, "Address to use to receive download requests");
+    Option daemonPortOpt = new Option("dap", "daemon-port", true, "Port to use to receive download requests");
+
+    Option diaryAddressOpt = new Option("dii", "diary-ip", true, "Address to use to register files to the diary");
+    Option diaryPortOpt = new Option("dip", "diary-port", true, "Port to use to register files to the diary");
 
     options.addOption(help);
     options.addOption(pathOpt);
-    options.addOption(portOpt);
+    options.addOption(summaryOpt);
+    options.addOption(daemonAddressOpt);
+    options.addOption(daemonPortOpt);
+    options.addOption(diaryAddressOpt);
+    options.addOption(diaryPortOpt);
+
     return options;
+  }
+
+  static void exit_with_error(String error) {
+    System.err.println(error);
+    System.exit(-1);
+
   }
 
   static CommandLine handle_cli(String[] args) throws ParseException {
@@ -48,22 +66,56 @@ public class App {
     return available_files_path;
   }
 
-  static int get_port(CommandLine cmd) {
-    int port = default_port;
-    if (cmd.hasOption("port")) {
+  static Daemon createDaemon(CommandLine cmd) {
+
+    Daemon daemon = new Daemon(get_files_path(cmd));
+
+    if (cmd.hasOption("dai")) {
+      daemon.setDaemonAddress(cmd.getOptionValue("dai"));
+
+    }
+    if (cmd.hasOption("dap")) {
       try {
-        port = Integer.parseInt(cmd.getOptionValue("port"));
-      } catch (Exception e) {
+        int port = Integer.parseInt(cmd.getOptionValue("dap"));
+        daemon.setDaemonPort(port);
+      } catch (NumberFormatException e) {
+        exit_with_error(e.toString());
 
       }
     }
-    return port;
+
+    if (cmd.hasOption("dii")) {
+      daemon.setDiaryAddress(cmd.getOptionValue("dii"));
+
+    }
+    if (cmd.hasOption("dip")) {
+      try {
+        int port = Integer.parseInt(cmd.getOptionValue("dip"));
+        daemon.setDiaryPort(port);
+      } catch (NumberFormatException e) {
+        exit_with_error(e.toString());
+
+      }
+    }
+
+    if (cmd.hasOption("s")) {
+      daemon.makeSummary();
+      System.exit(0);
+    }
+    return daemon;
+
   }
 
   public static void main(String[] args) {
     CommandLine cmd = null;
     try {
       cmd = handle_cli(args);
+      // Print help message
+      if (cmd.hasOption("help")) {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("daemon", create_options());
+        return;
+      }
     } catch (ParseException exp) {
       System.err.println("Parsing failed.  Reason: " + exp.getMessage());
       HelpFormatter formatter = new HelpFormatter();
@@ -71,31 +123,24 @@ public class App {
       System.exit(-1);
     }
 
-    // Print help message
-    if (cmd.hasOption("help")) {
-      HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp("daemon", create_options());
-      return;
-    }
-
-    Daemon daemon = new Daemon(get_files_path(cmd));
-    int port = get_port(cmd);
+    Daemon daemon = createDaemon(cmd);
 
     daemon.notify_diary();
-    try {
-      FileProvider stub = (FileProvider) UnicastRemoteObject.exportObject(daemon, 0);
-      Registry registry;
-      try {
-        registry = LocateRegistry.createRegistry(port);
-      } catch (RemoteException e) {
-        registry = LocateRegistry.getRegistry(port);
-      }
-      registry.rebind("FileProvider", stub);
+    // try {
+    // FileProvider stub = (FileProvider) UnicastRemoteObject.exportObject(daemon,
+    // 0);
+    // Registry registry;
+    // try {
+    // registry = LocateRegistry.createRegistry(port);
+    // } catch (RemoteException e) {
+    // registry = LocateRegistry.getRegistry(port);
+    // }
+    // registry.rebind("FileProvider", stub);
 
-      System.err.println("Server ready");
-    } catch (Exception e) {
-      System.err.println("Server exception: " + e.toString());
-      e.printStackTrace();
-    }
+    // System.err.println("Server ready");
+    // } catch (Exception e) {
+    // System.err.println("Server exception: " + e.toString());
+    // e.printStackTrace();
+    // }
   }
 }
