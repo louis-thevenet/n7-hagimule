@@ -1,4 +1,4 @@
-package hagimule.diary;
+package main.java;
 
 import java.net.InetAddress;
 import java.rmi.Naming;
@@ -15,8 +15,8 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
   /** Diary implementation. */
   private HashMap<String, List<Host>> impl = new HashMap<>();
 
-  public DiaryImpl() throws RemoteException {}
-  ;
+  public DiaryImpl() throws RemoteException {
+  };
 
   @Override
   public List<Host> whichHosts(String file) throws RemoteException, FileIsNotAvailableException {
@@ -66,8 +66,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
       Naming.rebind(URL, obj);
       System.out.println("Diary bound in registry Daemon");
 
-      URL =
-          "//" + InetAddress.getLocalHost().getHostAddress() + ":" + portDownloeader + "/my_server";
+      URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + portDownloeader + "/my_server";
       // Register the object with the naming service
       Naming.rebind(URL, obj);
       System.out.println("Diary bound in registry Downloader");

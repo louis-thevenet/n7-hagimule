@@ -1,10 +1,9 @@
-package hagimule.diary;
+package main.java;
 
-import java.net.InetAddress;
-import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -14,20 +13,24 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 public class App {
-  public static int default_port = 8081;
+  static String home_dir = System.getProperty("user.home");
+  static String default_files_path = home_dir + "/Downloads/";
+  static final int default_port = 8081;
 
-  public static Options create_options() {
+  static Options create_options() {
     Options options = new Options();
 
     Option help = new Option("h", "help", false, "Print this help message");
+    Option pathOpt = new Option("p", "path", true, "Path to files to make available");
     Option portOpt = new Option("port", true, "Port to use");
 
     options.addOption(help);
+    options.addOption(pathOpt);
     options.addOption(portOpt);
     return options;
   }
 
-  public static CommandLine handle_cli(String[] args) throws ParseException {
+  static CommandLine handle_cli(String[] args) throws ParseException {
     Options options = create_options();
 
     CommandLineParser parser = new DefaultParser();
@@ -35,12 +38,23 @@ public class App {
     return cmd;
   }
 
-  public static int get_port(CommandLine cmd) {
+  static String get_files_path(CommandLine cmd) {
+    String available_files_path;
+    if (cmd.hasOption("path")) {
+      available_files_path = cmd.getOptionValue("path");
+    } else {
+      available_files_path = default_files_path;
+    }
+    return available_files_path;
+  }
+
+  static int get_port(CommandLine cmd) {
     int port = default_port;
     if (cmd.hasOption("port")) {
       try {
         port = Integer.parseInt(cmd.getOptionValue("port"));
       } catch (Exception e) {
+
       }
     }
     return port;
@@ -53,52 +67,32 @@ public class App {
     } catch (ParseException exp) {
       System.err.println("Parsing failed.  Reason: " + exp.getMessage());
       HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp("diary", create_options());
+      formatter.printHelp("daemon", create_options());
       System.exit(-1);
     }
 
     // Print help message
     if (cmd.hasOption("help")) {
       HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp("diary", create_options());
+      formatter.printHelp("daemon", create_options());
       return;
     }
 
+    Daemon daemon = new Daemon(get_files_path(cmd));
     int port = get_port(cmd);
 
-    Registry registry;
-    // launching naming service
+    daemon.notify_diary();
     try {
-      registry = LocateRegistry.createRegistry(port);
-    } catch (RemoteException e) {
+      FileProvider stub = (FileProvider) UnicastRemoteObject.exportObject(daemon, 0);
+      Registry registry;
       try {
+        registry = LocateRegistry.createRegistry(port);
+      } catch (RemoteException e) {
         registry = LocateRegistry.getRegistry(port);
-      } catch (RemoteException e1) {
-        System.err.println("Server error : can't get the register");
-        e1.printStackTrace();
       }
-    }
+      registry.rebind("FileProvider", stub);
 
-    DiaryImpl diary;
-    try {
-      // Create a instance of the server object
-      diary = new DiaryImpl();
-    } catch (Exception e) {
-      diary = null;
-    }
-    try {
-
-      String URL =
-          "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/my_server_daemon";
-      // Register the object with the naming service
-      Naming.rebind(URL, diary);
-      System.out.println("Diary bound in registry Daemon");
-
-      URL =
-          "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/my_server_downloader";
-      // Register the object with the naming service
-      Naming.rebind(URL, diary);
-      System.out.println("Diary bound in registry Downloader");
+      System.err.println("Server ready");
     } catch (Exception e) {
       System.err.println("Server exception: " + e.toString());
       e.printStackTrace();

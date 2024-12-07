@@ -1,0 +1,40 @@
+subprojects {
+    apply plugin: 'java'
+}
+
+project(':diary') {
+    sourceSets {
+        main {
+            java {
+                srcDir '.'
+            }
+        }
+    }
+}
+
+project(':daemon') {
+
+    sourceSets {
+        main {
+            java {
+                srcDir '.'
+            }
+        }
+    }
+   //    dependencies {
+     //   compile project(':diary')
+    //}
+}
+
+
+
+project(':downloader') {
+    sourceSets {
+        main {
+            java {
+                srcDir '.'
+            }
+        }
+    }
+
+}

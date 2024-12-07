@@ -24,6 +24,7 @@ dependencies {
     // This dependency is used by the application.
     implementation libs.guava
     implementation 'commons-cli:commons-cli:1.9.0'
+    implementation(project(":diary"))
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -35,7 +36,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = 'hagimule.App'
+    mainClass = 'main.java.App'
 }
 
 tasks.named('test') {
