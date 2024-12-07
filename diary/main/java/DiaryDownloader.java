@@ -6,12 +6,12 @@ import java.util.List;
 
 public interface DiaryDownloader extends Remote {
   /**
-   * Get the names of the Hosts who get the file.
+   * Returns a list of hosts that provide the requested file.
    *
-   * @param file the filename wanted
+   * @param file name of the requested file
    * @return the list of Hosts
    * @throws RemoteException
    * @throws FileIsNotAvailableException If there is not a Hosts who get the File
    */
-  public List<Host> whichHosts(String file) throws RemoteException, FileIsNotAvailableException;
+  public List<Host> request(String file) throws RemoteException, FileIsNotAvailableException;
 }
