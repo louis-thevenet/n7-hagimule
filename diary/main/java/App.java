@@ -4,7 +4,6 @@ import java.net.InetAddress;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -98,14 +97,13 @@ public class App {
     } catch (RemoteException e) {
       exit_with_error("Couldn't initialize Diary: " + e.toString());
     }
-    
+
     try {
       String URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/register";
       // Register the object with the naming service
       Naming.rebind(URL, (DiaryDaemon) diary);
 
       logger.info("Diary bound in registry Daemon");
-
 
       URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/request";
       // Register the object with the naming service
