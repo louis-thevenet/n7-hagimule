@@ -1,9 +1,6 @@
 package main.java;
 
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -68,7 +65,12 @@ public class App {
 
   static Daemon createDaemon(CommandLine cmd) {
 
-    Daemon daemon = new Daemon(get_files_path(cmd));
+    Daemon daemon = null;
+    try {
+      daemon = new Daemon(get_files_path(cmd));
+    } catch (RemoteException e) {
+      exit_with_error("Failed to create daemon object: " + e);
+    }
 
     if (cmd.hasOption("dai")) {
       daemon.setDaemonAddress(cmd.getOptionValue("dai"));
@@ -126,21 +128,6 @@ public class App {
     Daemon daemon = createDaemon(cmd);
 
     daemon.notify_diary();
-    // try {
-    // FileProvider stub = (FileProvider) UnicastRemoteObject.exportObject(daemon,
-    // 0);
-    // Registry registry;
-    // try {
-    // registry = LocateRegistry.createRegistry(port);
-    // } catch (RemoteException e) {
-    // registry = LocateRegistry.getRegistry(port);
-    // }
-    // registry.rebind("FileProvider", stub);
-
-    // System.err.println("Server ready");
-    // } catch (Exception e) {
-    // System.err.println("Server exception: " + e.toString());
-    // e.printStackTrace();
-    // }
+    daemon.listen();
   }
 }

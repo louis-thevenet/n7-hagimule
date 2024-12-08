@@ -5,9 +5,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
 
 /** Daemon that registers available files and answers Download requests. */
-public class Daemon implements FileProvider {
+public class Daemon extends UnicastRemoteObject implements FileProvider {
   File[] availableFiles;
   String diaryAddress;
   Integer diaryPort = 8081;
@@ -39,7 +41,7 @@ public class Daemon implements FileProvider {
    * 
    * @param available_files_path: Path to the files to make available
    */
-  public Daemon(String available_files_path) {
+  public Daemon(String available_files_path) throws RemoteException {
     File availableFilesDir = new File(available_files_path);
     availableFiles = availableFilesDir.listFiles();
 
@@ -90,7 +92,22 @@ public class Daemon implements FileProvider {
 
   @Override
   public void Download(String filename) throws RemoteException {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'Download'");
+    System.out.println("Download request for: " + filename);
+  }
+
+  public void listen() {
+    try {
+      try {
+        LocateRegistry.createRegistry(daemonPort);
+      } catch (RemoteException e) {
+        LocateRegistry.getRegistry(daemonPort);
+      }
+      String URL = daemonAddress + ":" + daemonPort + "/download";
+      Naming.rebind(URL, (FileProvider) this);
+      System.out.println("Listening to requests");
+    } catch (Exception e) {
+      System.err.println("Server exception: " + e.toString());
+      e.printStackTrace();
+    }
   }
 }

@@ -6,7 +6,6 @@ import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.HashMap;
 import java.util.List;
 
 public class Downloader implements Runnable {
@@ -65,6 +64,13 @@ public class Downloader implements Runnable {
     System.out.println("Available hosts:");
     for (Host h : hosts) {
       System.out.println(h.getIp());
+      try {
+        FileProvider stub = (FileProvider) Naming
+            .lookup(h.getIp());
+        stub.Download(filename);
+      } catch (MalformedURLException | RemoteException | NotBoundException e) {
+        System.err.println("Could not retrieve FileProvider RMI: " + e);
+      }
     }
 
   }
