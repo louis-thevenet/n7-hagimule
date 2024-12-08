@@ -1,13 +1,31 @@
 # hagimule
 
-## Archi
+## To Do
 
-- Un serveur annuaire implémentation HashMap<String, Tuple Class Int \* List<Host>>
-- Un client possede des fichiers qui publient sur l'annuaire
-  - Il peut aussi télécharger d'autre fichier sur disponible sur le serveur annuaire.
-    Le téléchargement doitêtre découpé en plusieurs morceau de ton fichier.
+- [ ] Diary
 
-## Améliorations visées
+  - [x] Les daemon peut s'enregistrer
+    - [ ] Virer les doublons
+  - [ ] Les daemons peuvent se retirer
 
-Le client peut vérifier l'authenticité
-du fichier grace au checksum donnée avec la liste donnée par l'annuaire des hosts qui le possèdent.
+  - [x] Les downloader peuvent demander la liste des fichiers
+  - [x] Les downloader peuvent demander la liste des hosts pour un fichier
+    - [ ] Ici on devrait ping les daemons avant d'envoyer la liste et virer ceux qui répondent plus
+
+- [ ] Daemon
+
+  - [ ] Implémenter `download`
+  - [x] S'enregistre auprès du Diary avec les fichiers rendus disponibles
+
+- [ ] Downloader
+  - [ ] Implémenter le téléchargement
+    - [ ] Fournir plusieurs méthodes de téléchargement
+      - Depuis un seul daemon
+      - Diviser la charge de manière égale
+      - Faire des petits bouts et redistribuer selon la vitesse des daemon (théoriquement le mieux des trois ?)
+- [ ] Bonus
+  - [ ] Vérifier cohérence des adresses IP données en argument
+    - En implémentant une méthode _ping_ par exemple
+    - Utiliser une classe `Address` pour s'assurer de sa bonne forme au lieu de `String`
+  - [ ] Vérifier que les données sont bien celles attendues (pas de perte ou de modifications malveillantes par exemple)
+        Avec un checksum que le Diary conserve
