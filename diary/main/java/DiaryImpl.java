@@ -2,6 +2,7 @@ package main.java;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,5 +45,12 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     } else {
       l.add(h);
     }
+  }
+
+  @Override
+  public List<String> listFiles() {
+    List<String> res = new ArrayList<String>();
+    res.addAll(impl.keySet());
+    return res;
   }
 }

@@ -1,34 +1,89 @@
-// package hagimule.downloader;
+package main.java;
 
-// import java.util.HashMap;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.UnknownHostException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.util.HashMap;
+import java.util.List;
 
-// public class Downloader implements Runnable {
+public class Downloader implements Runnable {
+  String diaryAddress;
 
-// String file;
-// String filename;
-// Host host;
-// int size;
-// int part;
-// int offset;
-// HashMap<Integer, String> results;
+  public void setDiaryAddress(String diaryAddress) {
+    this.diaryAddress = diaryAddress;
+  }
 
-// public Downloader(Host h, String filename, int size, int part,
-// HashMap<Integer, String> results) {
-// this.host = h;
-// this.filename = filename;
-// this.size = size;
-// this.part = part;
-// this.offset = part * size;
-// this.results = results;
-// }
+  public void setDiaryPort(Integer diaryPort) {
+    this.diaryPort = diaryPort;
+  }
 
-// public void run() {
-// // connect to the Host
-// FileProvider fp = (FileProvider) Naming.lookup(h.getIp());
-// System.err.println("Client exception: " + e.toString());
-// e.printStackTrace();
+  Integer diaryPort = 8081;
+  final String diaryRequestEndpoint = "/request";
 
-// // download the file
-// fp.download(filename, size, offset);
-// }
-// }
+  public Downloader() {
+    try {
+      // Defaults to localhost
+      String local = "//" + InetAddress.getLocalHost().getHostAddress();
+      diaryAddress = local;
+    } catch (UnknownHostException e) {
+      System.err.println("Could not retrieve local address");
+    }
+  }
+
+  public void run() {
+    // connect to the Host
+    /*
+     * FileProvider fp = (FileProvider) Naming.lookup(h.getIp());
+     * System.err.println("Client exception: " + e.toString());
+     * e.printStackTrace();
+     * // download the file
+     * fp.download(filename, size, offset);
+     */
+  }
+
+  public void download(String filename) {
+    List<Host> hosts = null;
+    System.out.println("Requesting host list for: " + filename);
+    try {
+      DiaryDownloader stub = (DiaryDownloader) Naming
+          .lookup(String.join(":", diaryAddress, diaryPort.toString()) + diaryRequestEndpoint);
+
+      hosts = stub.request(filename);
+
+    } catch (MalformedURLException | RemoteException | NotBoundException e) {
+      System.err.println("Could not retrieve file list from diary: " + e);
+      e.printStackTrace();
+    } catch (FileIsNotAvailableException e) {
+
+      System.err.println("File is not available at the moment: " + e);
+      e.printStackTrace();
+    }
+
+    System.out.println("Available hosts:");
+    for (Host h : hosts) {
+      System.out.println(h.getIp());
+    }
+
+  }
+
+  public void listFiles() {
+    System.out.println("Available files:");
+
+    try {
+      DiaryDownloader stub = (DiaryDownloader) Naming
+          .lookup(String.join(":", diaryAddress, diaryPort.toString()) + diaryRequestEndpoint);
+
+      List<String> files = stub.listFiles();
+      for (String f : files) {
+        System.out.println("-> " + f);
+      }
+    } catch (MalformedURLException | RemoteException | NotBoundException e) {
+      System.err.println("Could not retrieve file list from diary: " + e);
+      e.printStackTrace();
+    }
+
+  }
+}

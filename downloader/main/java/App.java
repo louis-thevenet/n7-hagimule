@@ -1,189 +1,181 @@
-// package hagimule.downloader;
+package main.java;
 
-// import java.net.InetAddress;
-// import java.rmi.Naming;
-// import java.rmi.RemoteException;
-// import org.apache.commons.cli.CommandLine;
-// import org.apache.commons.cli.CommandLineParser;
-// import org.apache.commons.cli.DefaultParser;
-// import org.apache.commons.cli.HelpFormatter;
-// import org.apache.commons.cli.Option;
-// import org.apache.commons.cli.Options;
-// import org.apache.commons.cli.ParseException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
-// public class App {
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
 
-// /** default port number of diary. */
-// public static int defaultPort = 8081;
+public class App {
+  public static int defaultPort = 8081;
 
-// private String filename;
+  /**
+   * Create options in the commande line.
+   *
+   * @return the options
+   */
+  public static Options createOptions() {
+    Options options = new Options();
+    Option help = new Option("h", "help", false, "Print this help message");
+    Option ls = new Option("l", "list", false, "Request a list of available files");
 
-// private int sizeOfFile;
+    Option diaryAddressOpt = new Option("dii", "diary-ip", true, "Address to use to register files to the diary");
+    Option diaryPortOpt = new Option("dip", "diary-port", true, "Port to use to register files to the diary");
 
-// /** default ip address of the server (localhost). */
-// public static String defaultIpServer =
-// "//"
-// + InetAddress.getLocalHost().getHostAddress()
-// + ":"
-// + defaultPort
-// + "/my_server_downloader";
+    options.addOption(help);
+    options.addOption(ls);
+    options.addOption(diaryAddressOpt);
+    options.addOption(diaryPortOpt);
 
-// /**
-// * Create options in the commande line.
-// *
-// * @return the options
-// */
-// public static Options createOptions() {
-// Options options = new Options();
+    return options;
+  }
 
-// Option help = new Option("h", "help", false, "Print this help message");
-// Option ipServ = new Option("s", "server", true, "IP of the server to
-// connect");
-// Option portOpt = new Option("port", true, "Port to connect");
+  static void exit_with_error(String error) {
+    System.err.println(error);
+    System.exit(-1);
 
-// options.addOption(help);
-// options.addOption(portOpt);
-// options.addOption(ipServ);
-// return options;
-// }
+  }
 
-// /**
-// * Handler of the command line.
-// *
-// * @param args Arguments of the commande line
-// * @return the parsed command line
-// * @throws ParseException if the parser failed
-// */
-// public static CommandLine handleCli(String[] args) throws ParseException {
-// Options options = createOptions();
+  /**
+   * Handler of the command line.
+   *
+   * @param args Arguments of the commande line
+   * @return the parsed command line
+   * @throws ParseException if the parser failed
+   */
+  public static CommandLine handleCli(String[] args) throws ParseException {
+    Options options = createOptions();
+    CommandLineParser parser = new DefaultParser();
+    CommandLine cmd = parser.parse(options, args);
+    return cmd;
+  }
 
-// CommandLineParser parser = new DefaultParser();
-// CommandLine cmd = parser.parse(options, args);
-// return cmd;
-// }
+  /**
+   * Get the port number registered in the command line or default value.
+   *
+   * @param cmd the parsed command line
+   * @return the number the the port
+   */
+  public static int getDiaryPort(CommandLine cmd) {
+    int port = defaultPort;
+    if (cmd.hasOption("dip")) {
+      try {
+        port = Integer.parseInt(cmd.getOptionValue("dip"));
+      } catch (Exception e) {
+      }
+    }
+    return port;
+  }
 
-// /**
-// * Get the port number registered in the command line or default value.
-// *
-// * @param cmd the parsed command line
-// * @return the number the the port
-// */
-// public static int getPort(CommandLine cmd) {
-// int port = defaultPort;
-// if (cmd.hasOption("port")) {
-// try {
-// port = Integer.parseInt(cmd.getOptionValue("port"));
-// } catch (Exception e) {
-// }
-// }
-// return port;
-// }
+  /**
+   * Get the ip server from the command line.
+   *
+   * @param cmd the command line
+   * @return the ip of the server give in command line, else default.
+   */
+  public static String getDiaryIpServer(CommandLine cmd) {
+    if (cmd.hasOption("dii")) {
+      try {
+        return cmd.getOptionValue("dii");
+      } catch (Exception e) {
+        exit_with_error("Could not retrieve cli argument: " + e);
+      }
+      try {
+        return "//" + InetAddress.getLocalHost().getHostAddress();
+      } catch (UnknownHostException e2) {
+        exit_with_error("Could not retrieve local address: " + e2);
+      }
+    }
+    exit_with_error("No address found for dirary");
+    return null;
+  }
 
-// /**
-// * Get the ip server from the command line.
-// *
-// * @param cmd the command line
-// * @return the ip of the server give in command line, else default.
-// */
-// public static int getIpServer(CommandLine cmd) {
-// String ipServer = defaultIpServer;
-// if (cmd.hasOption("server")) {
-// try {
-// ipServer = cmd.getOptionValue("server");
-// } catch (Exception e) {
-// }
-// }
-// return ipServer;
-// }
+  /*
+   * public static String computeDownload(List<Host> lh) {
+   * // size of Download done by each source
+   * int taskSize = Math.max(1, sizeOfFile / lh.length);
+   * // Set of thread
+   * Set<Thread> threads = new HashSet<>();
+   * // List of results
+   * HashMap<Integer, String> results = new LinkedList<>();
+   * // Lists of activities
+   * List<Downloader> jobs = new LinkedList<>();
+   * // Jobs creation
+   * int i = 0;
+   * for (Host h : lh) {
+   * jobs.add(new Downloader(h, filename, taskSize, i, results));
+   * i++;
+   * }
+   * // Jobs start
+   * for (Downloader d : jobs) {
+   * threads.add(new Thread(d));
+   * d.start();
+   * }
+   * // wait for end
+   * for (Thread t : threads) {
+   * t.join();
+   * }
+   * // results combination
+   * String res = "";
+   * for (int i = 0; i < lh.length; i++) {
+   * res.concat(results.get(i));
+   * }
+   * return res;
+   * }
+   */
 
-// public static String computeDownload(List<Host> lh) {
-// // size of Download done by each source
-// int taskSize = Math.max(1, sizeOfFile / lh.length);
-// // Set of thread
-// Set<Thread> threads = new HashSet<>();
-// // List of results
-// HashMap<Integer, String> results = new LinkedList<>();
-// // Lists of activities
-// List<Downloader> jobs = new LinkedList<>();
+  /**
+   * Main function.
+   *
+   * @param args args of command line
+   */
+  public static void main(String[] args) {
+    CommandLine cmd = null;
+    try {
+      cmd = handleCli(args);
+      if (cmd.hasOption("help")) {
+        HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp("downloader", createOptions());
+        return;
+      }
 
-// // Jobs creation
-// int i = 0;
-// for (Host h : lh) {
-// jobs.add(new Downloader(h, filename, taskSize, i, results));
-// i++;
-// }
+    } catch (ParseException exp) {
+      System.err.println("Parsing failed. Reason: " + exp.getMessage());
+      HelpFormatter formatter = new HelpFormatter();
+      formatter.printHelp("downloader", createOptions());
+      System.exit(-1);
+    }
 
-// // Jobs start
-// for (Downloader d : jobs) {
-// threads.add(new Thread(d));
-// d.start();
-// }
+    Downloader dl = new Downloader();
 
-// // wait for end
-// for (Thread t : threads) {
-// t.join();
-// }
+    if (cmd.hasOption("dii")) {
+      dl.setDiaryAddress(cmd.getOptionValue("dii"));
 
-// // results combination
-// String res = "";
-// for (int i = 0; i < lh.length; i++) {
-// res.concat(results.get(i));
-// }
+    }
+    if (cmd.hasOption("dip")) {
+      try {
+        int port = Integer.parseInt(cmd.getOptionValue("dip"));
+        dl.setDiaryPort(port);
+      } catch (NumberFormatException e) {
+        exit_with_error(e.toString());
 
-// return res;
-// }
+      }
+    }
 
-// /**
-// * Main function.
-// *
-// * @param args args of command line
-// */
-// public static void main(String[] args) {
-// CommandLine cmd = null;
-// try {
-// cmd = handleCli(args);
+    if (cmd.hasOption("l")) {
+      dl.listFiles();
+    }
 
-// // Print help message
-// if (cmd.hasOption("help")) {
-// HelpFormatter formatter = new HelpFormatter();
-// formatter.printHelp("downloader", create_options());
-// return;
-// }
+    final String[] filesToDownload = cmd.getArgs();
+    for (String f : filesToDownload) {
+      dl.download(f);
 
-// // get args : default if not define in option
-// int port = getPort(cmd);
-// String ipServer = getIpServer(cmd);
+    }
 
-// if (cmd.getArgs().length == 0) {
-// throw new RuntimeException("error: No file indicated");
-// } else {
-// this.filename = cmd.getArgs()[0];
-// }
-
-// // connect to the diary
-// DiaryDownloader diairy = (DiaryDownloader) Naming.lookup(ipServer);
-
-// // search of Hosts of the file
-// List<Host> lh = new ArrayList<>();
-// this.sizeOfFile = diairy.whichHosts(filename, lh);
-
-// // Some hosts has been found, else FileIsNotAvailableException is raised
-// String res = computeDownload(lh, sizeOfFile);
-
-// } catch (ParseException exp) {
-// System.err.println("Parsing failed. Reason: " + exp.getMessage());
-// HelpFormatter formatter = new HelpFormatter();
-// formatter.printHelp("downloader", create_options());
-// System.exit(-1);
-// } catch (RemoteException e) {
-// System.err.println("Remote Exception raised");
-// e.printStackTrace();
-// } catch (FileIsNotAvailableException e) {
-// System.err.println(e.getMessage());
-// } catch (RuntimeException e) {
-// System.err.println(e.getMessage());
-// } catch (Exception e) {
-// e.printStackTrace();
-// }
-// }
-// }
+  }
+}
