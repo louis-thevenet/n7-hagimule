@@ -7,13 +7,20 @@ import java.util.List;
 public class Host implements Serializable {
 
   private String ip;
+  private Integer port;
+
+  public Integer getPort() {
+    return port;
+  }
+
   private List<String> files;
 
-  public Host(String ip) {
+  public Host(String ip, Integer port) {
     if (ip == null || ip.length() == 0) {
       throw new IllegalArgumentException("ip wrong format");
     }
     this.ip = ip;
+    this.port = port;
     this.files = new ArrayList<>();
   }
 

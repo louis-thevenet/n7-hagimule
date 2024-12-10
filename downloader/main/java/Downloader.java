@@ -1,7 +1,13 @@
 package main.java;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -66,10 +72,33 @@ public class Downloader implements Runnable {
       System.out.println(h.getIp());
       try {
         FileProvider stub = (FileProvider) Naming
-            .lookup(h.getIp());
-        stub.Download(filename);
+            .lookup(h.getIp() + ':' + h.getPort() + "/download");
+
+        String local = InetAddress.getLocalHost().getHostAddress();
+        Integer tcpPort = stub.allocatePortNumber(local);
+        Socket socket = new ServerSocket(tcpPort).accept();
+
+        stub.download(filename, tcpPort);
+
+        System.out.println(h.getIp().replaceAll("/", "") + ':' + tcpPort);
+
+        DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+        byte[] bytes = new byte[1024];
+        in.read(bytes);
+
+        FileOutputStream fos = new FileOutputStream(System.getProperty("user.dir") + "/downloads/" + filename);
+        fos.write(bytes);
+        fos.close();
+        socket.close();
+
       } catch (MalformedURLException | RemoteException | NotBoundException e) {
         System.err.println("Could not retrieve FileProvider RMI: " + e);
+      } catch (UnknownHostException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      } catch (IOException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       }
     }
 
