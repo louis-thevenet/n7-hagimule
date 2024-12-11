@@ -4,7 +4,6 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface FileProvider extends Remote {
-  int allocatePortNumber(String client) throws RemoteException;
+  int download(String client, String filename) throws RemoteException;
 
-  void download(String filename, Integer allocatedPort) throws RemoteException;
 }

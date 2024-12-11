@@ -1,16 +1,7 @@
 package main.java;
 
-import java.awt.datatransfer.ClipboardOwner;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
@@ -92,8 +83,10 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
           .lookup(String.join(":", diaryAddress, diaryPort.toString()) + diaryRegisterEndpoint);
 
       for (File f : availableFiles) {
-        System.out.println("Registering: " + f.getName());
-        register.registerFile(daemonAddress, daemonPort, f.getName());
+        if (f.isFile()) {
+          System.out.println("Registering: " + f.getName());
+          register.registerFile(daemonAddress, daemonPort, f.getName());
+        }
       }
     } catch (Exception ae) {
       System.out.println("Failed to register to diary: " + ae);
@@ -101,51 +94,29 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   }
 
   @Override
-  public int allocatePortNumber(String client) throws RemoteException {
+  public int download(String address, String filename) throws RemoteException {
 
     int port = daemonPort + 1;
-    System.out.println("Allocated port " + port + " for " + client);
-    currentDownloads.put(port, client);
-    return port;
-  }
+    System.out.println("Allocated port " + port + " for " + address);
 
-  @Override
-  public void download(String filename, Integer allocatedPort) throws RemoteException {
-
-    String client = currentDownloads.get(allocatedPort);
-    try (Socket serverSocket = new Socket(client, allocatedPort)) {
-      System.out.println(
-          "Sending file over port " + allocatedPort);
-
-      try (DataOutputStream out = new DataOutputStream(new BufferedOutputStream(serverSocket.getOutputStream()))) {
-        File file;
-        for (File f : availableFiles) {
-          if (f.getName() == filename) {
-            file = f;
-            FileInputStream fos = new FileInputStream(file);
-            int count;
-            byte[] buffer = new byte[8192]; // or 4096, or more
-            while ((count = fos.read(buffer)) > 0) {
-              out.write(buffer, 0, count);
-            }
-            fos.close();
-            return;
-          }
-        }
-      } catch (RemoteException e) {
-        throw e;
-      } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+    File file = null;
+    for (File f : availableFiles) {
+      String[] split = f.getPath().split("/");
+      String name = split[split.length - 1];
+      if (name.equals(filename)) {
+        file = f;
+        break;
       }
-    } catch (RemoteException e) {
-      throw e;
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
     }
 
-    System.out.println("File not found");
+    if (file == null) {
+      System.out.println("File not available"); // TODO:should throw exception
+    } else {
+      Sender sender = new Sender(file, address, port);
+      sender.start();
+    }
+
+    return port;
   }
 
   public void listen() {
