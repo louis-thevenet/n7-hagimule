@@ -49,7 +49,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     currentDownloads = new HashMap<>();
     try {
       // Defaults to localhost
-      String local = "//" + InetAddress.getLocalHost().getHostAddress();
+      String local = InetAddress.getLocalHost().getHostAddress();
       diaryAddress = local;
       daemonAddress = local;
     } catch (UnknownHostException e) {
@@ -80,7 +80,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
 
     try {
       DiaryDaemon register = (DiaryDaemon) Naming
-          .lookup(String.join(":", diaryAddress, diaryPort.toString()) + diaryRegisterEndpoint);
+          .lookup(String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryRegisterEndpoint);
 
       for (File f : availableFiles) {
         if (f.isFile()) {
@@ -126,7 +126,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       } catch (RemoteException e) {
         LocateRegistry.getRegistry(daemonPort);
       }
-      String URL = daemonAddress + ":" + daemonPort + "/download";
+      String URL = "//" + daemonAddress + ":" + daemonPort + "/download";
       Naming.rebind(URL, (FileProvider) this);
       System.out.println("Listening to requests");
     } catch (Exception e) {
