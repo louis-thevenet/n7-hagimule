@@ -32,7 +32,7 @@ public class Downloader {
   }
 
   Integer diaryPort = 8081;
-  final String diaryRequestEndpoint = "/request";
+  final String diaryRequestEndpoint = "request";
 
   public Downloader() {
     try {
@@ -52,7 +52,7 @@ public class Downloader {
     System.out.println("Requesting host list for: " + filename);
     try {
       DiaryDownloader stub = (DiaryDownloader) Naming
-          .lookup(String.join(":", diaryAddress, diaryPort.toString()) + diaryRequestEndpoint);
+          .lookup("//" + diaryAddress + ":" + diaryPort.toString() + "/" + diaryRequestEndpoint);
 
       hosts = stub.request(filename);
 
@@ -72,7 +72,7 @@ public class Downloader {
       try {
         // Request a download port from a host
         FileProvider stub = (FileProvider) Naming
-            .lookup(h.getIp() + ':' + h.getPort() + "/download");
+            .lookup("//" + h.getIp() + ':' + h.getPort() + "/download");
 
         String local = InetAddress.getLocalHost().getHostAddress();
         Integer tcpPort = stub.download(local, filename);
@@ -124,7 +124,7 @@ public class Downloader {
 
     try {
       DiaryDownloader stub = (DiaryDownloader) Naming
-          .lookup(String.join(":", diaryAddress, diaryPort.toString()) + diaryRequestEndpoint);
+          .lookup("//" + diaryAddress + ":" + diaryPort + "/" + diaryRequestEndpoint);
 
       List<String> files = stub.listFiles();
       for (String f : files) {
