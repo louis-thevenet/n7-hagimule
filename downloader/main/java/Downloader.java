@@ -68,7 +68,7 @@ public class Downloader {
     // Download from hosts
     System.out.println("Available hosts:");
     for (Host h : hosts) {
-      System.out.println(h.getIp());
+      System.out.println("//" + h.getIp() + ':' + h.getPort() + "/download");
       try {
         // Request a download port from a host
         FileProvider stub = (FileProvider) Naming
