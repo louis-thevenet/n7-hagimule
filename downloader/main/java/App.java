@@ -24,11 +24,13 @@ public class App {
     Option help = new Option("h", "help", false, "Print this help message");
     Option ls = new Option("l", "list", false, "Request a list of available files");
 
+    Option pathOpt = new Option("p", "path", true, "Path to store downloaded files");
     Option diaryAddressOpt = new Option("dii", "diary-ip", true, "Address to use to register files to the diary");
     Option diaryPortOpt = new Option("dip", "diary-port", true, "Port to use to register files to the diary");
 
     options.addOption(help);
     options.addOption(ls);
+    options.addOption(pathOpt);
     options.addOption(diaryAddressOpt);
     options.addOption(diaryPortOpt);
 
@@ -169,6 +171,10 @@ public class App {
 
     if (cmd.hasOption("l")) {
       dl.listFiles();
+    }
+
+    if (cmd.hasOption("p")) {
+      dl.setDownloadPath(cmd.getOptionValue("p"));
     }
 
     final String[] filesToDownload = cmd.getArgs();

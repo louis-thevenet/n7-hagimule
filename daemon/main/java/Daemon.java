@@ -7,9 +7,11 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 
 /** Daemon that registers available files and answers Download requests. */
 public class Daemon extends UnicastRemoteObject implements FileProvider {
+  HashMap<Integer, String> currentDownloads;
   File[] availableFiles;
   String diaryAddress;
   Integer diaryPort = 8081;
@@ -44,10 +46,10 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   public Daemon(String available_files_path) throws RemoteException {
     File availableFilesDir = new File(available_files_path);
     availableFiles = availableFilesDir.listFiles();
-
+    currentDownloads = new HashMap<>();
     try {
       // Defaults to localhost
-      String local = "//" + InetAddress.getLocalHost().getHostAddress();
+      String local = InetAddress.getLocalHost().getHostAddress();
       diaryAddress = local;
       daemonAddress = local;
     } catch (UnknownHostException e) {
@@ -75,15 +77,16 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
    */
   public void notify_diary() {
     System.out.println("Notifying Diary");
-    String daemonDownloadAddress = String.join(":", daemonAddress, daemonPort.toString()) + daemonDownloadEndpoint;
 
     try {
       DiaryDaemon register = (DiaryDaemon) Naming
-          .lookup(String.join(":", diaryAddress, diaryPort.toString()) + diaryRegisterEndpoint);
+          .lookup(String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryRegisterEndpoint);
 
       for (File f : availableFiles) {
-        System.out.println("Registering: " + f.getName());
-        register.registerFile(daemonDownloadAddress, f.getName());
+        if (f.isFile()) {
+          System.out.println("Registering: " + f.getName());
+          register.registerFile(daemonAddress, daemonPort, f.getName());
+        }
       }
     } catch (Exception ae) {
       System.out.println("Failed to register to diary: " + ae);
@@ -91,8 +94,29 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   }
 
   @Override
-  public void Download(String filename) throws RemoteException {
-    System.out.println("Download request for: " + filename);
+  public int download(String address, String filename) throws RemoteException {
+
+    int port = daemonPort + 1;
+    System.out.println("Allocated port " + port + " for " + address);
+
+    File file = null;
+    for (File f : availableFiles) {
+      String[] split = f.getPath().split("/");
+      String name = split[split.length - 1];
+      if (name.equals(filename)) {
+        file = f;
+        break;
+      }
+    }
+
+    if (file == null) {
+      System.out.println("File not available"); // TODO:should throw exception
+    } else {
+      Sender sender = new Sender(file, address, port);
+      sender.start();
+    }
+
+    return port;
   }
 
   public void listen() {
@@ -102,7 +126,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       } catch (RemoteException e) {
         LocateRegistry.getRegistry(daemonPort);
       }
-      String URL = daemonAddress + ":" + daemonPort + "/download";
+      String URL = "//" + daemonAddress + ":" + daemonPort + "/download";
       Naming.rebind(URL, (FileProvider) this);
       System.out.println("Listening to requests");
     } catch (Exception e) {
@@ -110,4 +134,5 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       e.printStackTrace();
     }
   }
+
 }

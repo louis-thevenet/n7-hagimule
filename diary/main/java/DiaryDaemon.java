@@ -17,5 +17,5 @@ public interface DiaryDaemon extends Remote {
    * @param file The name of the available file
    * @throws RemoteException
    */
-  public void registerFile(String ip, String file) throws RemoteException;
+  public void registerFile(String ip, Integer port, String file) throws RemoteException;
 }
