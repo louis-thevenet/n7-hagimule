@@ -10,10 +10,10 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 public class App {
-  static String home_dir = System.getProperty("user.home");
-  static String default_files_path = home_dir + "/Downloads/";
+  static String homeDir = System.getProperty("user.home");
+  static String defaultFilesPath = homeDir + "/Downloads/";
 
-  static Options create_options() {
+  static Options createOptions() {
     Options options = new Options();
 
     Option help = new Option("h", "help", false, "Print this help message");
@@ -39,37 +39,37 @@ public class App {
     return options;
   }
 
-  static void exit_with_error(String error) {
+  static void exitWithError(String error) {
     System.err.println(error);
     System.exit(-1);
 
   }
 
-  static CommandLine handle_cli(String[] args) throws ParseException {
-    Options options = create_options();
+  static CommandLine handleCLI(String[] args) throws ParseException {
+    Options options = createOptions();
 
     CommandLineParser parser = new DefaultParser();
     CommandLine cmd = parser.parse(options, args);
     return cmd;
   }
 
-  static String get_files_path(CommandLine cmd) {
-    String available_files_path;
+  static String getFilesPath(CommandLine cmd) {
+    String availableFilesPath;
     if (cmd.hasOption("path")) {
-      available_files_path = cmd.getOptionValue("path");
+      availableFilesPath = cmd.getOptionValue("path");
     } else {
-      available_files_path = default_files_path;
+      availableFilesPath = defaultFilesPath;
     }
-    return available_files_path;
+    return availableFilesPath;
   }
 
   static Daemon createDaemon(CommandLine cmd) {
 
     Daemon daemon = null;
     try {
-      daemon = new Daemon(get_files_path(cmd));
+      daemon = new Daemon(getFilesPath(cmd));
     } catch (RemoteException e) {
-      exit_with_error("Failed to create daemon object: " + e);
+      exitWithError("Failed to create daemon object: " + e);
     }
 
     if (cmd.hasOption("dai")) {
@@ -81,7 +81,7 @@ public class App {
         int port = Integer.parseInt(cmd.getOptionValue("dap"));
         daemon.setDaemonPort(port);
       } catch (NumberFormatException e) {
-        exit_with_error(e.toString());
+        exitWithError(e.toString());
 
       }
     }
@@ -95,7 +95,7 @@ public class App {
         int port = Integer.parseInt(cmd.getOptionValue("dip"));
         daemon.setDiaryPort(port);
       } catch (NumberFormatException e) {
-        exit_with_error(e.toString());
+        exitWithError(e.toString());
 
       }
     }
@@ -111,23 +111,23 @@ public class App {
   public static void main(String[] args) {
     CommandLine cmd = null;
     try {
-      cmd = handle_cli(args);
+      cmd = handleCLI(args);
       // Print help message
       if (cmd.hasOption("help")) {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("daemon", create_options());
+        formatter.printHelp("daemon", createOptions());
         return;
       }
     } catch (ParseException exp) {
       System.err.println("Parsing failed.  Reason: " + exp.getMessage());
       HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp("daemon", create_options());
+      formatter.printHelp("daemon", createOptions());
       System.exit(-1);
     }
 
     Daemon daemon = createDaemon(cmd);
 
-    daemon.notify_diary();
+    daemon.notifyDiary();
     daemon.listen();
   }
 }

@@ -40,7 +40,7 @@ public class App {
 
   }
 
-  public static CommandLine handle_cli(String[] args) throws ParseException {
+  public static CommandLine handleCLI(String[] args) throws ParseException {
     Options options = create_options();
 
     CommandLineParser parser = new DefaultParser();
@@ -54,7 +54,7 @@ public class App {
 
     CommandLine cmd = null;
     try {
-      cmd = handle_cli(args);
+      cmd = handleCLI(args);
     } catch (ParseException exp) {
       logger.severe("Parsing failed.  Reason: " + exp.getMessage());
       HelpFormatter formatter = new HelpFormatter();

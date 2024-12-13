@@ -41,10 +41,10 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   /**
    * Creates a new Daemon object
    * 
-   * @param available_files_path: Path to the files to make available
+   * @param availableFilesPath: Path to the files to make available
    */
-  public Daemon(String available_files_path) throws RemoteException {
-    File availableFilesDir = new File(available_files_path);
+  public Daemon(String availableFilesPath) throws RemoteException {
+    File availableFilesDir = new File(availableFilesPath);
     availableFiles = availableFilesDir.listFiles();
     currentDownloads = new HashMap<>();
     try {
@@ -75,7 +75,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   /**
    * Registers each files to be made available to the Diary.
    */
-  public void notify_diary() {
+  public void notifyDiary() {
     System.out.println(
         "Notifying Diary: " + String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryRegisterEndpoint);
 
