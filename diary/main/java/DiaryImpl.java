@@ -1,5 +1,6 @@
 package main.java;
 
+import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
@@ -13,6 +14,12 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
   /** Diary implementation. */
   private HashMap<String, List<Host>> impl = new HashMap<>();
   Logger logger;
+  String address;
+
+  public void setAddress(String address) {
+    System.out.print("ff");
+    this.address = address;
+  }
 
   public void setLogger(Logger logger) {
     this.logger = logger;
@@ -20,6 +27,12 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
 
   public DiaryImpl() throws RemoteException {
     logger = java.util.logging.Logger.getLogger("Diary");
+    try {
+      address = InetAddress.getLocalHost().getHostAddress();
+    } catch (Exception e) {
+      System.out.println("Failed to retrieve local address");
+
+    }
   };
 
   @Override

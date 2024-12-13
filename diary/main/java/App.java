@@ -24,10 +24,12 @@ public class App {
     Option help = new Option("h", "help", false, "Print this help message");
     Option debug = new Option("d", "debug", false, "Print debug messages");
 
+    Option diaryIpOpt = new Option("i", "ip", true, "address to use for the diary");
     Option diaryPortOpt = new Option("p", "port", true, "Port to use for the diary");
 
     options.addOption(help);
     options.addOption(debug);
+    options.addOption(diaryIpOpt);
     options.addOption(diaryPortOpt);
     return options;
   }
@@ -94,21 +96,26 @@ public class App {
     try {
       diary = new DiaryImpl();
       diary.setLogger(logger);
+      if (cmd.hasOption("i")) {
+        String address = cmd.getOptionValue("i");
+        diary.setAddress(address);
+      }
     } catch (RemoteException e) {
       exit_with_error("Couldn't initialize Diary: " + e.toString());
     }
 
     try {
-      String URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/register";
+      System.setProperty("jave.rmi.server.hostname", diary.address);
+      String URL = "//" + diary.address + ":" + port + "/register";
       // Register the object with the naming service
       Naming.rebind(URL, (DiaryDaemon) diary);
 
-      logger.info("Diary bound in registry Daemon");
+      logger.info("Diary bound in registry Daemon: " + URL);
 
-      URL = "//" + InetAddress.getLocalHost().getHostAddress() + ":" + port + "/request";
+      URL = "//" + diary.address + ":" + port + "/request";
       // Register the object with the naming service
       Naming.rebind(URL, (DiaryDownloader) diary);
-      logger.info("Diary bound in registry Downloader");
+      logger.info("Diary bound in registry Downloader: " + URL);
     } catch (Exception e) {
       exit_with_error("Server exception: " + e.toString());
     }
