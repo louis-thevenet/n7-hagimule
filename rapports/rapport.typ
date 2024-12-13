@@ -1,6 +1,4 @@
-
-
-rapport du 13/12/2024:
+= Rapport du 13/12/2024:
 
 Nous avons une première version fonctionnelle :
 - Les Daemon peuvent s'enregistrer auprès du Diary
