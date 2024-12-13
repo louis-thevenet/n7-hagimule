@@ -76,7 +76,8 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
    * Registers each files to be made available to the Diary.
    */
   public void notify_diary() {
-    System.out.println("Notifying Diary");
+    System.out.println(
+        "Notifying Diary: " + String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryRegisterEndpoint);
 
     try {
       DiaryDaemon register = (DiaryDaemon) Naming
