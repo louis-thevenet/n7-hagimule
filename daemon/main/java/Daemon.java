@@ -83,14 +83,21 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       DiaryDaemon register = (DiaryDaemon) Naming
           .lookup(String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryRegisterEndpoint);
 
+      if (availableFiles == null || availableFiles.length == 0) {
+        throw new RuntimeException("No file in this directory");
+      }
       for (File f : availableFiles) {
         if (f.isFile()) {
           System.out.println("Registering: " + f.getName());
           register.registerFile(daemonAddress, daemonPort, f.getName());
         }
       }
+    } catch (RuntimeException ae) {
+      System.out.println("Failed to register to diary: " + ae.getMessage());
+      System.exit(-1);
     } catch (Exception ae) {
       System.out.println("Failed to register to diary: " + ae);
+      System.exit(-1);
     }
   }
 
