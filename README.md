@@ -32,11 +32,15 @@
 
 ## How to use
 
-To launch a DiaryServer do :
+To start a Diary server:
 `./gradlew run -p diary`
 
-To launch a Deamon do :
+To start a Deamon:
 `./gradlew run -p daemon`
 
-To launch a Downloader Instance do :
+To list available files:
+`./gradlew run -p downloader --args="--list"`
+
+To download a specific file: 
+`./gradlew run -p downloader --args="<filename>"`
 `./gradlew run -p downloader`
