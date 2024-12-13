@@ -20,17 +20,20 @@ public class App {
    * @return the options
    */
   public static Options createOptions() {
+
     Options options = new Options();
     Option help = new Option("h", "help", false, "Print this help message");
     Option ls = new Option("l", "list", false, "Request a list of available files");
 
     Option pathOpt = new Option("p", "path", true, "Path to store downloaded files");
+    Option downloaderAddressOpt = new Option("doi", "downloader-ip", true, "Address to use to download files");
     Option diaryAddressOpt = new Option("dii", "diary-ip", true, "Address to use to register files to the diary");
     Option diaryPortOpt = new Option("dip", "diary-port", true, "Port to use to register files to the diary");
 
     options.addOption(help);
     options.addOption(ls);
     options.addOption(pathOpt);
+    options.addOption(downloaderAddressOpt);
     options.addOption(diaryAddressOpt);
     options.addOption(diaryPortOpt);
 
@@ -157,6 +160,10 @@ public class App {
 
     if (cmd.hasOption("dii")) {
       dl.setDiaryAddress(cmd.getOptionValue("dii"));
+
+    }
+    if (cmd.hasOption("doi")) {
+      dl.setDownloaderAddress(cmd.getOptionValue("doi"));
 
     }
     if (cmd.hasOption("dip")) {

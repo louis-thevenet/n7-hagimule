@@ -2,7 +2,6 @@ package main.java;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -18,6 +17,11 @@ import java.util.List;
 public class Downloader {
   String diaryAddress;
   String downloadPath;
+  String downloaderAddress;
+
+  public void setDownloaderAddress(String downloaderAddress) {
+    this.downloaderAddress = downloaderAddress;
+  }
 
   public void setDownloadPath(String downloadPath) {
     this.downloadPath = downloadPath;
@@ -39,6 +43,7 @@ public class Downloader {
       // Defaults to localhost
       String local = "//" + InetAddress.getLocalHost().getHostAddress();
       diaryAddress = local;
+      downloaderAddress = local;
       String home = System.getProperty("user.home");
       downloadPath = home + "/Downloads";
     } catch (UnknownHostException e) {
@@ -74,13 +79,13 @@ public class Downloader {
         FileProvider stub = (FileProvider) Naming
             .lookup("//" + h.getIp() + ':' + h.getPort() + "/download");
 
-        String local = InetAddress.getLocalHost().getHostAddress();
-        Integer tcpPort = stub.download(local, filename);
+        Integer tcpPort = stub.download(downloaderAddress, filename);
 
         ServerSocket serverSocket = new ServerSocket(tcpPort);
         Socket socket = serverSocket.accept();
         System.out
-            .println("Successfully connected to host " + local + ":" + tcpPort + ". Downloading file " + filename);
+            .println("Successfully connected to host " + downloaderAddress + ":" + tcpPort + ". Downloading file "
+                + filename);
 
         System.out.println(h.getIp().replaceAll("/", "") + ':' + tcpPort);
 
