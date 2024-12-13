@@ -37,6 +37,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
 
   @Override
   public List<Host> request(String file) throws RemoteException, FileIsNotAvailableException {
+    System.out.println("REQUEST : \t[" + file + "]");
     List<Host> ret = impl.get(file);
     if (ret == null) {
       throw new FileIsNotAvailableException("No registered host providing this file at the moment.");

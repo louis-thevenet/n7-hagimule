@@ -13,6 +13,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.List;
+import java.util.ArrayList;
 
 public class Downloader {
   String diaryAddress;
@@ -53,7 +54,7 @@ public class Downloader {
 
   public void download(String filename) {
     // Get host list from Diary
-    List<Host> hosts = null;
+    List<Host> hosts = new ArrayList<>();
     System.out.println("Requesting host list for: " + filename);
     try {
       DiaryDownloader stub = (DiaryDownloader) Naming
@@ -65,60 +66,60 @@ public class Downloader {
       System.err.println("Could not retrieve file list from diary: " + e);
       e.printStackTrace();
     } catch (FileIsNotAvailableException e) {
-
-      System.err.println("File is not available at the moment: " + e);
-      e.printStackTrace();
+      System.err.println("File is not available at the moment: " + e.getMessage());
     }
 
     // Download from hosts
-    System.out.println("Available hosts:");
-    for (Host h : hosts) {
-      System.out.println("//" + h.getIp() + ':' + h.getPort() + "/download");
-      try {
-        // Request a download port from a host
-        FileProvider stub = (FileProvider) Naming
-            .lookup("//" + h.getIp() + ':' + h.getPort() + "/download");
+    if (hosts.size() > 0) {
+      System.out.println("Available hosts:");
+      for (Host h : hosts) {
+        System.out.println("//" + h.getIp() + ':' + h.getPort() + "/download");
+        try {
+          // Request a download port from a host
+          FileProvider stub = (FileProvider) Naming
+              .lookup("//" + h.getIp() + ':' + h.getPort() + "/download");
 
-        Integer tcpPort = stub.download(downloaderAddress, filename);
+          Integer tcpPort = stub.download(downloaderAddress, filename);
 
-        ServerSocket serverSocket = new ServerSocket(tcpPort);
-        Socket socket = serverSocket.accept();
-        System.out
-            .println("Successfully connected to host " + downloaderAddress + ":" + tcpPort + ". Downloading file "
-                + filename);
+          ServerSocket serverSocket = new ServerSocket(tcpPort);
+          Socket socket = serverSocket.accept();
+          System.out
+              .println("Successfully connected to host " + downloaderAddress + ":" + tcpPort + ". Downloading file "
+                  + filename);
 
-        System.out.println(h.getIp().replaceAll("/", "") + ':' + tcpPort);
+          System.out.println(h.getIp().replaceAll("/", "") + ':' + tcpPort);
 
-        DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+          DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 
-        int bytes = 0;
-        FileOutputStream fileOutputStream = new FileOutputStream(downloadPath + "/" + filename);
+          int bytes = 0;
+          FileOutputStream fileOutputStream = new FileOutputStream(downloadPath + "/" + filename);
 
-        long size = in.readLong(); // read file size
-        byte[] buffer = new byte[4 * 1024];
-        while (size > 0
-            && (bytes = in.read(
-                buffer, 0,
-                (int) Math.min(buffer.length, size))) != -1) {
-          // Here we write the file using write method
-          fileOutputStream.write(buffer, 0, bytes);
-          size -= bytes; // read upto file size
+          long size = in.readLong(); // read file size
+          byte[] buffer = new byte[4 * 1024];
+          while (size > 0
+              && (bytes = in.read(
+                  buffer, 0,
+                  (int) Math.min(buffer.length, size))) != -1) {
+            // Here we write the file using write method
+            fileOutputStream.write(buffer, 0, bytes);
+            size -= bytes; // read upto file size
+          }
+
+          System.out.println("Wrote file to " + downloadPath + "/" + filename);
+          fileOutputStream.close();
+          in.close();
+          socket.close();
+          serverSocket.close();
+
+        } catch (MalformedURLException | RemoteException | NotBoundException e) {
+          System.err.println("Could not retrieve FileProvider RMI: " + e);
+        } catch (UnknownHostException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        } catch (IOException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
         }
-
-        System.out.println("Wrote file to " + downloadPath + "/" + filename);
-        fileOutputStream.close();
-        in.close();
-        socket.close();
-        serverSocket.close();
-
-      } catch (MalformedURLException | RemoteException | NotBoundException e) {
-        System.err.println("Could not retrieve FileProvider RMI: " + e);
-      } catch (UnknownHostException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
       }
     }
 
