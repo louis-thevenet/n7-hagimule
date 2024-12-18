@@ -28,15 +28,15 @@ public class Sender extends Thread {
 
       DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-      int bytes = 0;
-
       FileInputStream fileInputStream = new FileInputStream(file.getAbsolutePath());
-      // Here we send the File to Server
-      dataOutputStream.writeLong(file.length());
 
+      System.out.println("Sending " + size + " bytes");
+
+      int bytes = 0;
       // Here we break file into chunks
       byte[] buffer = new byte[4 * 1024];
-      while ((bytes = fileInputStream.read(buffer)) != -1) {
+      fileInputStream.skipNBytes(offset);
+      while (bytes < size && (bytes += fileInputStream.read(buffer)) != -1) {
         // Send the file to Server Socket
         dataOutputStream.write(buffer, 0, bytes);
         dataOutputStream.flush();
