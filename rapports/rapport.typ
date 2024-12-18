@@ -13,4 +13,4 @@ Nous rencontrons des difficultés à faire fonctionner notre projet sur plusieur
 
 = Rapport du 18/12/2024
 
-Nous avons toujours une version fonctionnelle. On met en place le téléchargement en parrallele.
+Nous sommes en train d'implémenter le téléchargement en parallèle. Nous n'avons pas encore exactement compris pourquoi le projet ne fonctionne pas dans un réseau domestique.
