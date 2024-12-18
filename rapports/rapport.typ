@@ -9,3 +9,8 @@ Nous rencontrons des difficultés à faire fonctionner notre projet sur plusieur
 - Entre différentes machines de l'n7, tout fonctionne
 - Entre des machines de notre réseau privée, ça ne marche pas
 - Entre nos machines et celles de l'n7 (en VPN ou direct), ça fonctionne des fois
+
+
+= Rapport du 18/12/2024
+
+Nous avons toujours une version fonctionnelle. On met en place le téléchargement en parrallele.
