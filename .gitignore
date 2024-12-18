@@ -25,3 +25,7 @@ buildNumber.properties
 # Ignore Gradle build output directory
 build
 */bin/
+
+
+# Files used to test file transfer
+/test_files
