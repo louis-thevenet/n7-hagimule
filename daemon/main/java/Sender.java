@@ -1,6 +1,5 @@
 package main.java;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,12 +9,15 @@ public class Sender extends Thread {
   File file;
   String address;
   Integer port;
+  private long offset;
+  private long size;
 
-  public Sender(File file, String address, Integer port) {
+  public Sender(File file, String address, Integer port, long offset, long size) {
     this.file = file;
     this.address = address;
     this.port = port;
-
+    this.offset = offset;
+    this.size = size;
   }
 
   public void run() {

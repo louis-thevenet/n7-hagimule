@@ -102,7 +102,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   }
 
   @Override
-  public int download(String address, String filename) throws RemoteException {
+  public int download(String address, String filename, long offset, long size) throws RemoteException {
 
     int port = daemonPort + 1;
     System.out.println("Allocated port " + port + " for " + address);
@@ -120,7 +120,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     if (file == null) {
       System.out.println("File not available"); // TODO:should throw exception
     } else {
-      Sender sender = new Sender(file, address, port);
+      Sender sender = new Sender(file, address, port, offset, size);
       sender.start();
     }
 
