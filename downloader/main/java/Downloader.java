@@ -42,7 +42,7 @@ public class Downloader {
   public Downloader() {
     try {
       // Defaults to localhost
-      String local = "//" + InetAddress.getLocalHost().getHostAddress();
+      String local = InetAddress.getLocalHost().getHostAddress();
       diaryAddress = local;
       downloaderAddress = local;
       String home = System.getProperty("user.home");
