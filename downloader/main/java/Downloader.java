@@ -139,11 +139,13 @@ public class Downloader {
             && (bytes = in.read(
                 buffer.array(), 0,
                 (int) Math.min(buffer.capacity(), size))) != -1) {
-          buffer.put(buffer.array(), 0, bytes); // Add only the read data to the buffer
+
+          if (bytesTotal > size) {
+            buffer.put(buffer.array(), 0, bytes); // Add only the read data to the buffer
+          }
           buffer.flip();
           // output.lock(offset + bytesTotal, bytes, true);
           output.write(buffer, offset + bytesTotal);
-          buffer.clear();
           bytesTotal += bytes;
         }
 
