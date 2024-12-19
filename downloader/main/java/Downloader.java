@@ -1,16 +1,17 @@
 package main.java;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -62,20 +63,24 @@ public class Downloader {
       // Set of thread
       Set<Thread> threads = new HashSet<>();
 
-      // List of results
-      ByteArrayOutputStream results = new ByteArrayOutputStream((int) sizeOfFile);
-
       // Lists of activities
       List<InnerDownloader> jobs = new ArrayList<>();
+
+      RandomAccessFile reader = null;
+      try {
+        reader = new RandomAccessFile(downloadPath + "/" + filename, "rw");
+      } catch (FileNotFoundException e) {
+        e.printStackTrace();
+      }
+      FileChannel channel = reader.getChannel();
 
       // Jobs creation
       int i = 0;
       for (Host h : hosts) {
-        jobs.add(new InnerDownloader(h, filename, i * taskSize, taskSize, results));
+        jobs.add(new InnerDownloader(h, filename, i * taskSize, taskSize, channel));
         System.out.println("Host " + h.getIp() + " : " + i + " : " + i * taskSize);
         i++;
       }
-
       // Jobs start
       for (InnerDownloader d : jobs) {
         Thread t = new Thread(d);
@@ -92,12 +97,6 @@ public class Downloader {
         }
       }
 
-      try {
-        OutputStream outputStream = new FileOutputStream(downloadPath + "/" + filename);
-        results.writeTo(outputStream);
-      } catch (Exception e) {
-        throw new RuntimeException("File could not be created");
-      }
     }
   }
 
@@ -107,13 +106,13 @@ public class Downloader {
     private long offset;
     private long size;
     private String filename;
-    private ByteArrayOutputStream results;
+    private FileChannel output;
 
-    public InnerDownloader(Host h, String filename, long offset, long size, ByteArrayOutputStream results) {
+    public InnerDownloader(Host h, String filename, long offset, long size, FileChannel output) {
       this.h = h;
       this.offset = offset;
       this.size = size;
-      this.results = results;
+      this.output = output;
       this.filename = filename;
     }
 
@@ -135,13 +134,16 @@ public class Downloader {
 
         int bytes = 0;
         int bytesTotal = 0;
-        byte[] buffer = new byte[4 * 1024];
-        while (bytesTotal < size
+        ByteBuffer buffer = ByteBuffer.allocate(4 * 1024);
+        while (bytesTotal <= size
             && (bytes = in.read(
-                buffer, 0,
-                (int) Math.min(buffer.length, size))) != -1) {
-
-          results.write(buffer, 0, bytes);
+                buffer.array(), 0,
+                (int) Math.min(buffer.capacity(), size))) != -1) {
+          buffer.put(buffer.array(), 0, bytes); // Add only the read data to the buffer
+          buffer.flip();
+          // output.lock(offset + bytesTotal, bytes, true);
+          output.write(buffer, offset + bytesTotal);
+          buffer.clear();
           bytesTotal += bytes;
         }
 
