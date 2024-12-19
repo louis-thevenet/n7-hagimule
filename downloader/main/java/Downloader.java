@@ -47,6 +47,7 @@ public class Downloader {
     for (Host h : hosts) {
       System.out.println(h.getIp());
     }
+
     System.out.println("File size: " + sizeOfFile);
 
     // Download from hosts
@@ -55,8 +56,8 @@ public class Downloader {
       // size of Download done by each source
       long taskSize = sizeOfFile / hosts.size();
 
-      System.out.println("Split task in " + hosts.size());
-      System.out.println("Task size " + taskSize);
+      System.out.println("Split task in " + hosts.size() + " parts");
+      System.out.println("Task size: " + taskSize);
 
       // Set of thread
       Set<Thread> threads = new HashSet<>();
@@ -128,21 +129,20 @@ public class Downloader {
         Socket socket = serverSocket.accept();
         System.out
             .println("Successfully connected to host " + downloaderAddress + ":" + tcpPort
-                + ". Downloading file "
-                + filename);
-
-        System.out.println(h.getIp().replaceAll("/", "") + ':' + tcpPort);
+                + ". Downloading from " + offset + " to " + offset + size + " of " + filename);
 
         DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 
         int bytes = 0;
+        int bytesTotal = 0;
         byte[] buffer = new byte[4 * 1024];
-        while (bytes < size
-            && (bytes += in.read(
+        while (bytesTotal < size
+            && (bytes = in.read(
                 buffer, 0,
                 (int) Math.min(buffer.length, size))) != -1) {
 
           results.write(buffer, 0, bytes);
+          bytesTotal += bytes;
         }
 
         in.close();

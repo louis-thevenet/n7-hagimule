@@ -16,8 +16,8 @@ downloader args:
 run-all:
     tmux \
     split-window -v "just run diary; read" \; \
-    split-window -h "sleep 1; just daemon './test_files/machine_a' '-dap 8082'; read" \; \
-    split-window -v "sleep 1; just daemon './test_files/machine_b' '-dap 8083'; read" \;
+    split-window -h "sleep 0.5; just daemon './test_files/machine_a' '-dap 4000'; read" \; \
+    split-window -v "sleep 0.5; just daemon './test_files/machine_b' '-dap 8000'; read" \;
 
 run project:
     java -jar {{project}}/build/libs/{{project}}-all.jar

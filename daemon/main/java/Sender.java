@@ -33,13 +33,15 @@ public class Sender extends Thread {
       System.out.println("Sending " + size + " bytes");
 
       int bytes = 0;
+      int bytesTotal = 0;
       // Here we break file into chunks
       byte[] buffer = new byte[4 * 1024];
       fileInputStream.skipNBytes(offset);
-      while (bytes < size && (bytes += fileInputStream.read(buffer)) != -1) {
+      while (bytesTotal < size && (bytes = fileInputStream.read(buffer)) != -1) {
         // Send the file to Server Socket
         dataOutputStream.write(buffer, 0, bytes);
         dataOutputStream.flush();
+        bytesTotal += bytes;
       }
       fileInputStream.close();
       dataOutputStream.close();
