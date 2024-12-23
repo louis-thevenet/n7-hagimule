@@ -14,6 +14,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
   /** Diary implementation. */
   private HashMap<String, List<Host>> impl = new HashMap<>();
   private HashMap<String, Long> sizes = new HashMap<>();
+  private List<Host> allTheHost = new ArrayList<>();
   Logger logger;
   String address;
 
@@ -60,7 +61,11 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
   public void registerFile(String ip, Integer port, String file, long size) throws RemoteException {
     System.out.println('"' + ip + ':' + port + '"' + "\tregistered: \t" + '[' + file + ']');
 
+    // get the host from the list of all Hosts
     Host h = new Host(ip, port);
+    if (allTheHost.contains(h)) {
+      h = allTheHost.get(allTheHost.indexOf(h));
+    }
     h.addFile(file);
     List<Host> l = impl.get(file);
     if (l == null) {
@@ -82,5 +87,24 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     List<String> res = new ArrayList<String>();
     res.addAll(impl.keySet());
     return res;
+  }
+
+  @Override
+  public void disconnect(String ip, Integer port) throws RemoteException {
+    System.out.println("DISCONNECT : \t [" + ip + ":" + port + "]");
+    
+    // get the Host
+    Host h = new Host(ip, port);
+    if (allTheHost.contains(h)) {
+      h = allTheHost.get(allTheHost.indexOf(h));
+    }
+    for (String file : h.getFiles()) {
+      List<Host> assoc = impl.get(file);
+      assoc.remove(h);
+      if (assoc.isEmpty()) {
+        impl.remove(file);
+      }
+    }
+    allTheHost.remove(h);
   }
 }

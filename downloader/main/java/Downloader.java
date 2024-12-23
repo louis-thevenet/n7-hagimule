@@ -44,15 +44,15 @@ public class Downloader {
       System.err.println("File is not available at the moment: " + e.getMessage());
     }
 
-    System.out.println("Available hosts:");
-    for (Host h : hosts) {
-      System.out.println(h.getIp());
-    }
-
-    System.out.println("File size: " + sizeOfFile);
-
     // Download from hosts
     if (hosts.size() > 0) {
+
+      System.out.println("Available hosts:");
+      for (Host h : hosts) {
+        System.out.println(h.getIp());
+      }
+
+      System.out.println("File size: " + sizeOfFile);
 
       // size of Download done by each source
       long taskSize = sizeOfFile / hosts.size();
