@@ -23,34 +23,37 @@ public class Sender extends Thread {
   public void run() {
 
     System.out.println("Sending " + file.getName() + " to " + address + ":" + port);
+    boolean success = false;
+    while (!success) {
+      try (Socket socket = new Socket(address, port)) {
+        
+        DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+        
+        FileInputStream fileInputStream = new FileInputStream(file.getAbsolutePath());
+        
+        System.out.println("Sending " + size + " bytes");
+        
+        int bytes = 0;
+        int bytesTotal = 0;
+        // Here we break file into chunks
+        byte[] buffer = new byte[4 * 1024];
+        fileInputStream.skipNBytes(offset);
+        while (bytesTotal < size && (bytes = fileInputStream.read(buffer)) != -1) {
+          // Send the file to Server Socket
+          dataOutputStream.write(buffer, 0, bytes);
+          dataOutputStream.flush();
+          bytesTotal += bytes;
+        }
+        fileInputStream.close();
+        dataOutputStream.close();
+        fileInputStream.close();
+        socket.close();
+        success = true;
 
-    try (Socket socket = new Socket(address, port)) {
-
-      DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-
-      FileInputStream fileInputStream = new FileInputStream(file.getAbsolutePath());
-
-      System.out.println("Sending " + size + " bytes");
-
-      int bytes = 0;
-      int bytesTotal = 0;
-      // Here we break file into chunks
-      byte[] buffer = new byte[4 * 1024];
-      fileInputStream.skipNBytes(offset);
-      while (bytesTotal < size && (bytes = fileInputStream.read(buffer)) != -1) {
-        // Send the file to Server Socket
-        dataOutputStream.write(buffer, 0, bytes);
-        dataOutputStream.flush();
-        bytesTotal += bytes;
+        System.out.println("Sent");
+      } catch (Exception e) {
+        System.out.println("Error during connexion to downloader ServerSocket ... retry");
       }
-      fileInputStream.close();
-      dataOutputStream.close();
-      fileInputStream.close();
-      socket.close();
-
-      System.out.println("Sent");
-    } catch (Exception e) {
-      e.printStackTrace();
     }
 
   }
