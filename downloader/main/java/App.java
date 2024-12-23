@@ -100,39 +100,6 @@ public class App {
     return null;
   }
 
-  /*
-   * public static String computeDownload(List<Host> lh) {
-   * // size of Download done by each source
-   * int taskSize = Math.max(1, sizeOfFile / lh.length);
-   * // Set of thread
-   * Set<Thread> threads = new HashSet<>();
-   * // List of results
-   * HashMap<Integer, String> results = new LinkedList<>();
-   * // Lists of activities
-   * List<Downloader> jobs = new LinkedList<>();
-   * // Jobs creation
-   * int i = 0;
-   * for (Host h : lh) {
-   * jobs.add(new Downloader(h, filename, taskSize, i, results));
-   * i++;
-   * }
-   * // Jobs start
-   * for (Downloader d : jobs) {
-   * threads.add(new Thread(d));
-   * d.start();
-   * }
-   * // wait for end
-   * for (Thread t : threads) {
-   * t.join();
-   * }
-   * // results combination
-   * String res = "";
-   * for (int i = 0; i < lh.length; i++) {
-   * res.concat(results.get(i));
-   * }
-   * return res;
-   * }
-   */
 
   /**
    * Main function.

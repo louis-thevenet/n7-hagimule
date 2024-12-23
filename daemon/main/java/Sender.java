@@ -1,6 +1,5 @@
 package main.java;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,12 +9,15 @@ public class Sender extends Thread {
   File file;
   String address;
   Integer port;
+  private long offset;
+  private long size;
 
-  public Sender(File file, String address, Integer port) {
+  public Sender(File file, String address, Integer port, long offset, long size) {
     this.file = file;
     this.address = address;
     this.port = port;
-
+    this.offset = offset;
+    this.size = size;
   }
 
   public void run() {
@@ -26,18 +28,20 @@ public class Sender extends Thread {
 
       DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-      int bytes = 0;
-
       FileInputStream fileInputStream = new FileInputStream(file.getAbsolutePath());
-      // Here we send the File to Server
-      dataOutputStream.writeLong(file.length());
 
+      System.out.println("Sending " + size + " bytes");
+
+      int bytes = 0;
+      int bytesTotal = 0;
       // Here we break file into chunks
       byte[] buffer = new byte[4 * 1024];
-      while ((bytes = fileInputStream.read(buffer)) != -1) {
+      fileInputStream.skipNBytes(offset);
+      while (bytesTotal < size && (bytes = fileInputStream.read(buffer)) != -1) {
         // Send the file to Server Socket
         dataOutputStream.write(buffer, 0, bytes);
         dataOutputStream.flush();
+        bytesTotal += bytes;
       }
       fileInputStream.close();
       dataOutputStream.close();

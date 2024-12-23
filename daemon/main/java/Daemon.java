@@ -89,7 +89,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       for (File f : availableFiles) {
         if (f.isFile()) {
           System.out.println("Registering: " + f.getName());
-          register.registerFile(daemonAddress, daemonPort, f.getName());
+          register.registerFile(daemonAddress, daemonPort, f.getName(), f.length());
         }
       }
     } catch (RuntimeException ae) {
@@ -102,10 +102,13 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   }
 
   @Override
-  public int download(String address, String filename) throws RemoteException {
+  public int download(String address, String filename, long offset, long size) throws RemoteException {
 
     int port = daemonPort + 1;
     System.out.println("Allocated port " + port + " for " + address);
+    System.out.println("Sending " + filename);
+    System.out.println("Chunk size " + size);
+    System.out.println("Chunk offset " + offset);
 
     File file = null;
     for (File f : availableFiles) {
@@ -120,7 +123,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     if (file == null) {
       System.out.println("File not available"); // TODO:should throw exception
     } else {
-      Sender sender = new Sender(file, address, port);
+      Sender sender = new Sender(file, address, port, offset, size);
       sender.start();
     }
 
