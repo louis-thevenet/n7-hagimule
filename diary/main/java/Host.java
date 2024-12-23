@@ -33,7 +33,7 @@ public class Host implements Serializable {
   }
 
   public String toString() {
-    return ip;
+    return ip + port;
   }
 
   public String getIp() {
@@ -53,5 +53,11 @@ public class Host implements Serializable {
     } else {
       files.add(nf);
     }
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+      Host h = (Host) obj;
+      return h.ip.equals(this.ip) && h.port == port;
   }
 }
