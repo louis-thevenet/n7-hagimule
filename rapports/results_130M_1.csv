@@ -1,0 +1,2 @@
+command,mean,stddev,median,user,system,min,max
+java21 -jar downloader/build/libs/downloader-all.jar -dii galium 130M,4.8549377733400005,0.019074050925443828,4.851140179060001,0.7919322,0.53362402,4.825311705060001,4.8958530510600005
