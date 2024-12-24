@@ -38,7 +38,7 @@ public class Sender extends Thread {
 
         int bytes = 0;
         int bytesTotal = 0;
-        int bufferSize = 128 * 1024;
+        int bufferSize = 64 * 1024;
         ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
         while (bytesTotal <= size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
           System.out.println(bytes);
