@@ -146,7 +146,7 @@ public class Downloader {
             buffer.put(old, 0, bytes); // Add only the read data to the buffer
           }
 
-          // buffer.flip();
+          buffer.flip();
           // output.lock(offset + bytesTotal, bytes, true);
           output.write(buffer, offset + bytesTotal);
           bytesTotal += bytes;
