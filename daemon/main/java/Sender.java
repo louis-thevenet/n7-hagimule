@@ -2,8 +2,10 @@ package main.java;
 
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.RandomAccessFile;
 import java.net.Socket;
+
+import java.nio.ByteBuffer;
 
 public class Sender extends Thread {
   File file;
@@ -28,24 +30,32 @@ public class Sender extends Thread {
 
       DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-      FileInputStream fileInputStream = new FileInputStream(file.getAbsolutePath());
+      RandomAccessFile randomAccessFile = new RandomAccessFile(file.getAbsolutePath(), "r");
+      var fileInputStream = randomAccessFile.getChannel();
 
       System.out.println("Sending " + size + " bytes");
 
       int bytes = 0;
       int bytesTotal = 0;
       // Here we break file into chunks
-      byte[] buffer = new byte[4 * 1024];
-      fileInputStream.skipNBytes(offset);
-      while (bytesTotal < size && (bytes = fileInputStream.read(buffer)) != -1) {
-        // Send the file to Server Socket
-        dataOutputStream.write(buffer, 0, bytes);
+      // byte[] buffer = new byte[4 * 1024];
+      ByteBuffer buffer = ByteBuffer.allocate(4 * 1024);
+      // fileInputStream.skipNBytes(offset);
+      while (bytesTotal < size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
+        if (bytes < 4 * 1024) {
+          var old = buffer.array();
+          buffer.clear();
+          buffer.put(old, 0, bytes); // Add only the read data to the buffer
+        }
+
+        dataOutputStream.write(buffer.array(), 0, bytes);
         dataOutputStream.flush();
         bytesTotal += bytes;
       }
       fileInputStream.close();
       dataOutputStream.close();
       fileInputStream.close();
+      randomAccessFile.close();
       socket.close();
 
       System.out.println("Sent");
