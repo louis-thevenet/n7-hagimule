@@ -38,11 +38,11 @@ public class Sender extends Thread {
 
         int bytes = 0;
         int bytesTotal = 0;
-        ByteBuffer buffer = ByteBuffer.allocate(1 * 1024);
+        int bufferSize = 64 * 1024;
+        ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
         while (bytesTotal <= size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
           System.out.println(bytes);
-          if (bytes < 1 * 1024) {
-            System.out.println("end");
+          if (bytes < bufferSize) {
             var old = buffer.array();
             buffer.clear();
             buffer.put(old, 0, bytes); // Add only the read data to the buffer
