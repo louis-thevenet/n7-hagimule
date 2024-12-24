@@ -41,7 +41,6 @@ public class Sender extends Thread {
         int bufferSize = 64 * 1024;
         ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
         while (bytesTotal <= size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
-          System.out.println(bytes);
           if (bytes < bufferSize) {
             var old = buffer.array();
             buffer.clear();
