@@ -42,7 +42,7 @@ public class Sender extends Thread {
         // byte[] buffer = new byte[4 * 1024];
         ByteBuffer buffer = ByteBuffer.allocate(4 * 1024);
         // fileInputStream.skipNBytes(offset);
-        while (bytesTotal < size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
+        while (bytesTotal <= size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
           if (bytes < 4 * 1024) {
             var old = buffer.array();
             buffer.clear();
