@@ -38,17 +38,17 @@ public class Sender extends Thread {
 
         int bytes = 0;
         int bytesTotal = 0;
-        // Here we break file into chunks
-        // byte[] buffer = new byte[4 * 1024];
-        ByteBuffer buffer = ByteBuffer.allocate(4 * 1024);
-        // fileInputStream.skipNBytes(offset);
+        ByteBuffer buffer = ByteBuffer.allocate(1 * 1024);
         while (bytesTotal <= size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
-          if (bytes <= 4 * 1024) {
+          System.out.println(bytes);
+          if (bytes < 1 * 1024) {
+            System.out.println("end");
             var old = buffer.array();
             buffer.clear();
             buffer.put(old, 0, bytes); // Add only the read data to the buffer
           }
 
+          buffer.flip();
           dataOutputStream.write(buffer.array(), 0, bytes);
           dataOutputStream.flush();
           bytesTotal += bytes;

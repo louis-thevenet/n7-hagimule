@@ -14,6 +14,7 @@ downloader args:
     just run-args downloader "{{args}}"
 
 run-all:
+    just build
     tmux \
     split-window -v "just run diary; read" \; \
     split-window -h "sleep 0.5; just daemon './test_files/machine_a' '-dap 4000'; read" \; \

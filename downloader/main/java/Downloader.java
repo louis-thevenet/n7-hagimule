@@ -134,20 +134,20 @@ public class Downloader {
 
         int bytes = 0;
         int bytesTotal = 0;
-        ByteBuffer buffer = ByteBuffer.allocate(4 * 1024);
+        ByteBuffer buffer = ByteBuffer.allocate(1 * 1024);
         while (bytesTotal <= size
             && (bytes = in.read(
                 buffer.array(), 0,
                 (int) Math.min(buffer.capacity(), size))) != -1) {
 
-          if (bytes < 4 * 1024) {
+          if (bytes < 1 * 1024) {
             var old = buffer.array();
             buffer.clear();
             buffer.put(old, 0, bytes); // Add only the read data to the buffer
           }
 
-          buffer.flip();
           // output.lock(offset + bytesTotal, bytes, true);
+          buffer.flip();
           output.write(buffer, offset + bytesTotal);
           bytesTotal += bytes;
         }
