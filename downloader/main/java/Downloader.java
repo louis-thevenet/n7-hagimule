@@ -134,7 +134,7 @@ public class Downloader {
 
         int bytes = 0;
         int bytesTotal = 0;
-        int bufferSize = 64 * 1024;
+        int bufferSize = 128 * 1024;
         ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
         while (bytesTotal <= size
             && (bytes = in.read(
