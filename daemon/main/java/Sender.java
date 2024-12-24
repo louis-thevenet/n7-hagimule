@@ -25,42 +25,45 @@ public class Sender extends Thread {
   public void run() {
 
     System.out.println("Sending " + file.getName() + " to " + address + ":" + port);
+    boolean success = false;
+    while (!success) {
+      try (Socket socket = new Socket(address, port)) {
 
-    try (Socket socket = new Socket(address, port)) {
+        DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-      DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+        RandomAccessFile randomAccessFile = new RandomAccessFile(file.getAbsolutePath(), "r");
+        var fileInputStream = randomAccessFile.getChannel();
 
-      RandomAccessFile randomAccessFile = new RandomAccessFile(file.getAbsolutePath(), "r");
-      var fileInputStream = randomAccessFile.getChannel();
+        System.out.println("Sending " + size + " bytes");
 
-      System.out.println("Sending " + size + " bytes");
+        int bytes = 0;
+        int bytesTotal = 0;
+        // Here we break file into chunks
+        // byte[] buffer = new byte[4 * 1024];
+        ByteBuffer buffer = ByteBuffer.allocate(4 * 1024);
+        // fileInputStream.skipNBytes(offset);
+        while (bytesTotal < size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
+          if (bytes < 4 * 1024) {
+            var old = buffer.array();
+            buffer.clear();
+            buffer.put(old, 0, bytes); // Add only the read data to the buffer
+          }
 
-      int bytes = 0;
-      int bytesTotal = 0;
-      // Here we break file into chunks
-      // byte[] buffer = new byte[4 * 1024];
-      ByteBuffer buffer = ByteBuffer.allocate(4 * 1024);
-      // fileInputStream.skipNBytes(offset);
-      while (bytesTotal < size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
-        if (bytes < 4 * 1024) {
-          var old = buffer.array();
-          buffer.clear();
-          buffer.put(old, 0, bytes); // Add only the read data to the buffer
+          dataOutputStream.write(buffer.array(), 0, bytes);
+          dataOutputStream.flush();
+          bytesTotal += bytes;
         }
+        fileInputStream.close();
+        dataOutputStream.close();
+        fileInputStream.close();
+        randomAccessFile.close();
+        socket.close();
+        success = true;
 
-        dataOutputStream.write(buffer.array(), 0, bytes);
-        dataOutputStream.flush();
-        bytesTotal += bytes;
+        System.out.println("Sent");
+      } catch (Exception e) {
+        e.printStackTrace();
       }
-      fileInputStream.close();
-      dataOutputStream.close();
-      fileInputStream.close();
-      randomAccessFile.close();
-      socket.close();
-
-      System.out.println("Sent");
-    } catch (Exception e) {
-      e.printStackTrace();
     }
 
   }
