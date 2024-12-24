@@ -140,9 +140,12 @@ public class Downloader {
                 buffer.array(), 0,
                 (int) Math.min(buffer.capacity(), size))) != -1) {
 
-          if (bytesTotal > size) {
-            buffer.put(buffer.array(), 0, bytes); // Add only the read data to the buffer
+          if (bytes < size) {
+            var old = buffer.array();
+            buffer.clear();
+            buffer.put(old, 0, bytes); // Add only the read data to the buffer
           }
+
           buffer.flip();
           // output.lock(offset + bytesTotal, bytes, true);
           output.write(buffer, offset + bytesTotal);
