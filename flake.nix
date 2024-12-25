@@ -45,6 +45,11 @@
                 jdk21
                 gradle
                 just
+                (pkgs.python3.withPackages (python-pkgs: [
+                  python-pkgs.matplotlib
+                  python-pkgs.pyqt6
+                  python-pkgs.numpy
+                ]))
               ]);
           };
 
