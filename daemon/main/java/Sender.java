@@ -61,7 +61,7 @@ public class Sender extends Thread {
 
         System.out.println("Sent");
       } catch (Exception e) {
-        e.printStackTrace();
+        System.out.println("Failed to connect to downloader. Retrying...");
       }
     }
 
