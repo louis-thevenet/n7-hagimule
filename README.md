@@ -29,3 +29,18 @@
     - Utiliser une classe `Address` pour s'assurer de sa bonne forme au lieu de `String`
   - [ ] Vérifier que les données sont bien celles attendues (pas de perte ou de modifications malveillantes par exemple)
         Avec un checksum que le Diary conserve
+
+
+## How to use
+
+To start a Diary server:
+`./gradlew run -p diary`
+
+To start a Deamon:
+`./gradlew run -p daemon`
+
+To list available files:
+`./gradlew run -p downloader --args="--list"`
+
+To download a specific file: 
+`./gradlew run -p downloader --args="<filename>"`
