@@ -26,42 +26,42 @@ public class Sender extends Thread {
 
     System.out.println("Sending " + file.getName() + " to " + address + ":" + port);
     boolean success = false;
-    // while (!success) {
-    try (Socket socket = new Socket(address, port)) {
+    while (!success) {
+      try (Socket socket = new Socket(address, port)) {
 
-      DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+        DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
-      RandomAccessFile randomAccessFile = new RandomAccessFile(file.getAbsolutePath(), "r");
-      var fileInputStream = randomAccessFile.getChannel();
+        RandomAccessFile randomAccessFile = new RandomAccessFile(file.getAbsolutePath(), "r");
+        var fileInputStream = randomAccessFile.getChannel();
 
-      System.out.println("Sending a total of " + size + " bytes");
+        System.out.println("Sending a total of " + size + " bytes");
 
-      int bytes = 0;
-      int bytesTotal = 0;
-      int bufferSize = 64 * 1024;
-      ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
-      while (bytesTotal <= size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
-        buffer.flip();
-        int to_send = Math.min((int) size - bytesTotal, Math.min(bytes, (int) size));
-        dataOutputStream.write(buffer.array(), 0, to_send);
-        System.out.println("Sent " + to_send + " bytes"
-            +
-            " from " + (offset + bytesTotal) + " to " + (offset + bytesTotal + to_send));
-        dataOutputStream.flush();
-        bytesTotal += bytes;
+        int bytes = 0;
+        int bytesTotal = 0;
+        int bufferSize = 64 * 1024;
+        ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
+        while (bytesTotal <= size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
+          buffer.flip();
+          int to_send = Math.min((int) size - bytesTotal, Math.min(bytes, (int) size));
+          dataOutputStream.write(buffer.array(), 0, to_send);
+          System.out.println("Sent " + to_send + " bytes"
+              +
+              " from " + (offset + bytesTotal) + " to " + (offset + bytesTotal + to_send));
+          dataOutputStream.flush();
+          bytesTotal += bytes;
+        }
+        fileInputStream.close();
+        dataOutputStream.close();
+        fileInputStream.close();
+        randomAccessFile.close();
+        socket.close();
+        success = true;
+
+        System.out.println("Sent");
+      } catch (Exception e) {
+        System.out.println("Failed to connect to downloader: " + e + "\n Retrying...");
       }
-      fileInputStream.close();
-      dataOutputStream.close();
-      fileInputStream.close();
-      randomAccessFile.close();
-      socket.close();
-      // success = true;
-
-      System.out.println("Sent");
-    } catch (Exception e) {
-      System.out.println("Failed to connect to downloader: " + e + "\n Retrying...");
     }
-    // }
 
   }
 }
