@@ -77,8 +77,12 @@ public class Downloader {
       // Jobs creation
       int i = 0;
       for (Host h : hosts) {
-        jobs.add(new InnerDownloader(h, filename, i * taskSize, taskSize, channel));
-        System.out.println("Host " + h.getIp() + " : " + i + " : " + i * taskSize);
+        long offset = i * taskSize;
+        if (i == hosts.size() - 1) {
+          taskSize += 1;
+        }
+        jobs.add(new InnerDownloader(h, filename, offset, taskSize, channel));
+        System.out.println("Host " + h.getIp() + " : " + i + " : " + offset);
         i++;
       }
       // Jobs start
@@ -117,6 +121,8 @@ public class Downloader {
     }
 
     public void run() {
+      var worker_id = this.offset / this.size;
+      String id_str = "[" + worker_id + "] ";
       try {
         // Request a download port from a host
         FileProvider stub = (FileProvider) Naming
@@ -127,8 +133,8 @@ public class Downloader {
         ServerSocket serverSocket = new ServerSocket(tcpPort);
         Socket socket = serverSocket.accept();
         System.out
-            .println("Successfully connected to host " + downloaderAddress + ":" + tcpPort
-                + ". Downloading from " + offset + " to " + offset + size + " of " + filename);
+            .println(id_str + "Successfully connected to host " + downloaderAddress + ":" + tcpPort);
+        System.out.println(id_str + "Downloading from " + offset + " to " + (offset + size) + " of " + filename);
 
         DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 
@@ -140,6 +146,8 @@ public class Downloader {
             && (bytes = in.read(
                 buffer.array(), 0,
                 (int) Math.min(buffer.capacity(), size))) != -1) {
+          System.out.println(id_str + "Got " + bytes + " bytes");
+          System.out.println(id_str + "From " + (offset + bytesTotal) + " to " + (offset + bytesTotal + bytes));
 
           if (bytes < bufferSize) {
             var old = buffer.array();
