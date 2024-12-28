@@ -44,9 +44,9 @@ public class Sender extends Thread {
           buffer.flip();
           int to_send = Math.min((int) size - bytesTotal, Math.min(bytes, (int) size));
           dataOutputStream.write(buffer.array(), 0, to_send);
-          System.out.println("Sent " + to_send + " bytes"
-              +
-              " from " + (offset + bytesTotal) + " to " + (offset + bytesTotal + to_send));
+          // System.out.println("Sent " + to_send + " bytes"
+          // +
+          // " from " + (offset + bytesTotal) + " to " + (offset + bytesTotal + to_send));
           dataOutputStream.flush();
           bytesTotal += bytes;
         }

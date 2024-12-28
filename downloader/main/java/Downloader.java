@@ -146,8 +146,9 @@ public class Downloader {
             && (bytes = in.read(
                 buffer.array(), 0,
                 (int) Math.min(buffer.capacity(), size))) != -1) {
-          System.out.println(id_str + "Got " + bytes + " bytes");
-          System.out.println(id_str + "From " + (offset + bytesTotal) + " to " + (offset + bytesTotal + bytes));
+          // System.out.println(id_str + "Got " + bytes + " bytes");
+          // System.out.println(id_str + "From " + (offset + bytesTotal) + " to " +
+          // (offset + bytesTotal + bytes));
 
           if (bytes < bufferSize) {
             var old = buffer.array();
