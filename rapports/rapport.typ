@@ -19,3 +19,28 @@ Nous sommes en train d'implémenter le téléchargement en parallèle. Nous n'av
 Le téléchargement parallèle est terminé. Au début il n'était pas si efficace que ça car l'écriture dans le fichier nous limitait. On a décidé d'utiliser des `FileChannel` pour écrire au fur et à mesure que l'on télécharge.
 
 Les `FileChannel` nous ont fait passer de 29s à 12s pour un fichier de 1Gb téléchargé depuis 4 démons (tous sur des machines de l'N7).
+
+#let res_130M_1_10MS = json("./results_130M_1_10ms.json").at("results").at(0);
+#let res_130M_4_10MS = json("./results_130M_4_10ms.json").at("results").at(0);
+#let res_130M_8_10MS = json("./results_130M_8_10ms.json").at("results").at(0);
+
+= Rapport du 28/12
+== Tests pour $130$ Mo, $10$ ms de délai artificiel
+#table(
+  columns: 4,
+  [Démons], [Temps (s)], [Min (s)], [Max (s)],
+  [$1$],
+  [$#calc.round(res_130M_1_10MS.at("mean"), digits:2) plus.minus #calc.round(res_130M_1_10MS.at("stddev"), digits:2)$],
+  [$#calc.round(res_130M_1_10MS.at("min"), digits:2)$],
+  [$#calc.round(res_130M_1_10MS.at("max"), digits:2)$],
+
+  [$4$],
+  [$#calc.round(res_130M_4_10MS.at("mean"), digits:2) plus.minus #calc.round(res_130M_4_10MS.at("stddev"), digits:2)$],
+  [$#calc.round(res_130M_4_10MS.at("min"), digits:2)$],
+  [$#calc.round(res_130M_4_10MS.at("max"), digits:2)$],
+
+  [$8$],
+  [$#calc.round(res_130M_8_10MS.at("mean"), digits:2) plus.minus #calc.round(res_130M_8_10MS.at("stddev"), digits:2)$],
+  [$#calc.round(res_130M_8_10MS.at("min"), digits:2)$],
+  [$#calc.round(res_130M_8_10MS.at("max"), digits:2)$],
+)

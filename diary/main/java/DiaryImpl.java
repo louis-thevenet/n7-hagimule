@@ -18,7 +18,6 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
   String address;
 
   public void setAddress(String address) {
-    System.out.print("ff");
     this.address = address;
   }
 
@@ -72,7 +71,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
       if (sizes.get(file) == size) {
         l.add(h);
       } else {
-        throw new RemoteException("la taille ne correspond à la valeur connue.");
+        throw new RemoteException("File size doesn't match known size");
       }
     }
   }

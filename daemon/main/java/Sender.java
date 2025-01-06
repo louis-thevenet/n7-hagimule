@@ -34,21 +34,19 @@ public class Sender extends Thread {
         RandomAccessFile randomAccessFile = new RandomAccessFile(file.getAbsolutePath(), "r");
         var fileInputStream = randomAccessFile.getChannel();
 
-        System.out.println("Sending " + size + " bytes");
+        System.out.println("Sending a total of " + size + " bytes");
 
         int bytes = 0;
         int bytesTotal = 0;
         int bufferSize = 64 * 1024;
         ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
         while (bytesTotal <= size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
-          if (bytes < bufferSize) {
-            var old = buffer.array();
-            buffer.clear();
-            buffer.put(old, 0, bytes); // Add only the read data to the buffer
-          }
-
           buffer.flip();
-          dataOutputStream.write(buffer.array(), 0, bytes);
+          int to_send = Math.min((int) size - bytesTotal, Math.min(bytes, (int) size));
+          dataOutputStream.write(buffer.array(), 0, to_send);
+          // System.out.println("Sent " + to_send + " bytes"
+          // +
+          // " from " + (offset + bytesTotal) + " to " + (offset + bytesTotal + to_send));
           dataOutputStream.flush();
           bytesTotal += bytes;
         }
@@ -61,7 +59,7 @@ public class Sender extends Thread {
 
         System.out.println("Sent");
       } catch (Exception e) {
-        System.out.println("Failed to connect to downloader. Retrying...");
+        System.out.println("Failed to connect to downloader: " + e + "\n Retrying...");
       }
     }
 
