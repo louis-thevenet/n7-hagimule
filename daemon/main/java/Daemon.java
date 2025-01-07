@@ -8,6 +8,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /** Daemon that registers available files and answers Download requests. */
 public class Daemon extends UnicastRemoteObject implements FileProvider {
@@ -15,6 +18,11 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   File[] availableFiles;
   String diaryAddress;
   Integer diaryPort = 8081;
+  private int fileCurrentySend = 0;
+  private Lock mon = new ReentrantLock();
+  private Condition closure = mon.newCondition();
+  private final AliveNotifyer notifyer;
+  private final Thread thNotifyer;
 
   public void setDiaryAddress(String diaryAddress) {
     this.diaryAddress = diaryAddress;
@@ -34,8 +42,10 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
 
   final String diaryRegisterEndpoint = "/register";
 
-  final String diaryDisconnectEndpoint = "/disconnect";
-
+  private final String diaryDisconnectEndpoint = "/disconnect";
+  
+  private final String diaryStillAliveEndpoint = "/notifyalive";
+  
   String daemonAddress;
   Integer daemonPort = 8082;
   final String daemonDownloadEndpoint = "/download";
@@ -57,6 +67,9 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     } catch (UnknownHostException e) {
       System.err.println("Could not retrieve local address");
     }
+    this.notifyer = new AliveNotifyer(daemonAddress, daemonPort, 
+      String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryStillAliveEndpoint);
+    this.thNotifyer = new Thread(notifyer);
   }
 
   /**
@@ -105,7 +118,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
 
   @Override
   public int download(String address, String filename, long offset, long size) throws RemoteException {
-
+    fileCurrentySend++;
     int port = daemonPort + 1;
     System.out.println("Allocated port " + port + " for " + address);
     System.out.println("Sending " + filename);
@@ -124,9 +137,19 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
 
     if (file == null) {
       System.out.println("File not available"); // TODO:should throw exception
+      throw new RemoteException("File is not available");
     } else {
       Sender sender = new Sender(file, address, port, offset, size);
       sender.start();
+      try {
+        sender.join();
+      } catch (InterruptedException e) {
+        // TODO: handle exception
+      }
+      fileCurrentySend--;
+      if (fileCurrentySend == 0) {
+        closure.signal();
+      }
     }
 
     return port;
@@ -146,6 +169,8 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       System.err.println("Server exception: " + e.toString());
       e.printStackTrace();
     }
+    // lancement du notifyer
+    thNotifyer.start();
   }
 
   public void disconnect() {
@@ -154,6 +179,11 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
           .lookup(String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryDisconnectEndpoint);
 
       register.disconnect(daemonAddress, daemonPort);
+      thNotifyer.interrupt();
+      while (fileCurrentySend > 0) {
+        closure.await();
+      }
+      System.exit(0);
     } catch (RuntimeException ae) {
       System.out.println("Failed to register to diary: " + ae.getMessage());
       System.exit(-1);
