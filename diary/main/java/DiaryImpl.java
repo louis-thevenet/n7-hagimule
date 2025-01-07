@@ -109,16 +109,20 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
   }
 
   @Override
-  public void notifyAlive(String ip, Integer port) throws RemoteException {
+  public boolean notifyAlive(String ip, Integer port) throws RemoteException {
+    boolean found = false;
     for (Host host : allTheHost) {
       if (host.equals(new Host(ip, port))) {
         host.resetTime();
+        found = true;
+        break;
       }
     }
     // lance une vérification globale si l'interval de confiance expire
     if (System.currentTimeMillis() - lastVerif > 90) {
       verifAlive();
     }
+    return found;
   }
 
   private void verifAlive() {
