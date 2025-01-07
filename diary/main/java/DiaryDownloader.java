@@ -31,13 +31,5 @@ public interface DiaryDownloader extends Remote {
    * @return all files available to download
    */
   public List<String> listFiles() throws RemoteException;
-  
 
-  /**
-   * Method to signal that a Daemon has disconnect.
-   * @param ip ip address of the daemon which wants to disconnect
-   * @param port port of the deamon which wants to disconnect
-   * @throws RemoteException
-   */
-  public void disconnect(String ip, Integer port) throws RemoteException;
 }

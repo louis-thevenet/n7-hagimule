@@ -34,6 +34,8 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
 
   final String diaryRegisterEndpoint = "/register";
 
+  final String diaryDisconnectEndpoint = "/disconnect";
+
   String daemonAddress;
   Integer daemonPort = 8082;
   final String daemonDownloadEndpoint = "/download";
@@ -146,4 +148,18 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     }
   }
 
+  public void disconnect() {
+    try {
+      DiaryDaemon register = (DiaryDaemon) Naming
+          .lookup(String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryDisconnectEndpoint);
+
+      register.disconnect(daemonAddress, daemonPort);
+    } catch (RuntimeException ae) {
+      System.out.println("Failed to register to diary: " + ae.getMessage());
+      System.exit(-1);
+    } catch (Exception ae) {
+      System.out.println("Failed to register to diary: " + ae);
+      System.exit(-1);
+    }
+  }
 }
