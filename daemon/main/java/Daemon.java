@@ -67,7 +67,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     } catch (UnknownHostException e) {
       System.err.println("Could not retrieve local address");
     }
-    this.notifyer = new AliveNotifyer(daemonAddress, daemonPort, 
+    this.notifyer = new AliveNotifyer(this,
       String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryStillAliveEndpoint);
     this.thNotifyer = new Thread(notifyer);
   }
