@@ -17,6 +17,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
   private List<Host> allTheHost = new ArrayList<>();
   Logger logger;
   String address;
+  private long lastVerif = System.currentTimeMillis();
 
   public void setAddress(String address) {
     System.out.print("ff");
@@ -33,7 +34,6 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
       address = InetAddress.getLocalHost().getHostAddress();
     } catch (Exception e) {
       System.out.println("Failed to retrieve local address");
-
     }
   };
 
@@ -106,5 +106,29 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
       }
     }
     allTheHost.remove(h);
+  }
+
+  @Override
+  public void notifyAlive(String ip, Integer port) throws RemoteException {
+    for (Host host : allTheHost) {
+      if (host.equals(new Host(ip, port))) {
+        host.resetTime();
+      }
+    }
+    // lance une vérification globale si l'interval de confiance expire
+    if (System.currentTimeMillis() - lastVerif > 90) {
+      verifAlive();
+    }
+  }
+
+  private void verifAlive() {
+    for (Host host : allTheHost) {
+      if (System.currentTimeMillis() - host.getTime() > 85) {
+        try {
+          disconnect(host.getIp(), host.getPort());
+        } catch (Exception e) {
+        }
+      }
+    }
   }
 }

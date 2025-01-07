@@ -8,6 +8,7 @@ public class Host implements Serializable {
 
   private String ip;
   private Integer port;
+  private long lastAck;
 
   public Integer getPort() {
     return port;
@@ -22,6 +23,7 @@ public class Host implements Serializable {
     this.ip = ip;
     this.port = port;
     this.files = new ArrayList<>();
+    this.lastAck = System.currentTimeMillis();
   }
 
   public Host(String ip, List<String> files) {
@@ -36,12 +38,20 @@ public class Host implements Serializable {
     return ip + port;
   }
 
+  public void resetTime() {
+    this.lastAck = System.currentTimeMillis();
+  }
+
   public String getIp() {
     return ip;
   }
 
   public List<String> getFiles() {
     return files;
+  }
+
+  public long getTime() {
+    return lastAck;
   }
 
   public void addFile(String nf) {
