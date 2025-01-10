@@ -26,7 +26,9 @@ public class Sender extends Thread {
 
     System.out.println("Sending " + file.getName() + " to " + address + ":" + port);
     boolean success = false;
-    while (!success) {
+    int try_ = 1;
+    while (!success && try_ <= 3) {
+      System.out.println("addresse : " + address + " port : " + port);
       try (Socket socket = new Socket(address, port)) {
 
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
@@ -59,8 +61,16 @@ public class Sender extends Thread {
 
         System.out.println("Sent");
       } catch (Exception e) {
-        // System.out.println("Failed to connect to downloader: " + e + "\n Retrying...");
+        System.out.println("Failed (attempt " + try_ + ") to connect to downloader: " + e + "\n Retrying...");
+        try {
+          Thread.sleep(1_000);
+        } catch (Exception e2) {
+        }
       }
+      try_++;
+    }
+    if (!success) {
+      System.out.println("Abort...");
     }
 
   }

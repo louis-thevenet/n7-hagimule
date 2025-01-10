@@ -169,10 +169,8 @@ public class Downloader {
       } catch (MalformedURLException | RemoteException | NotBoundException e) {
         System.err.println("Could not retrieve FileProvider RMI: " + e);
       } catch (UnknownHostException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       } catch (IOException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }

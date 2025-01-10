@@ -8,9 +8,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /** Daemon that registers available files and answers Download requests. */
 public class Daemon extends UnicastRemoteObject implements FileProvider {
@@ -19,8 +16,6 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   String diaryAddress;
   Integer diaryPort = 8081;
   private int fileCurrentySend = 0;
-  private Lock mon = new ReentrantLock();
-  private Condition closure = mon.newCondition();
   private AliveNotifyer notifyer;
   private Thread thNotifyer;
 
@@ -140,12 +135,8 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       try {
         sender.join();
       } catch (InterruptedException e) {
-        // TODO: handle exception
       }
       fileCurrentySend--;
-      if (fileCurrentySend == 0) {
-        closure.signal();
-      }
     }
 
     return port;
@@ -175,7 +166,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       register.disconnect(daemonAddress, daemonPort);
       thNotifyer.interrupt();
       while (fileCurrentySend > 0) {
-        closure.await();
+        Thread.sleep(1_000);
       }
       System.exit(0);
     } catch (RuntimeException ae) {
