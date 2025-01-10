@@ -31,4 +31,5 @@ public interface DiaryDownloader extends Remote {
    * @return all files available to download
    */
   public List<String> listFiles() throws RemoteException;
+
 }

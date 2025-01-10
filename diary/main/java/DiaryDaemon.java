@@ -18,4 +18,21 @@ public interface DiaryDaemon extends Remote {
    * @throws RemoteException if the size is different
    */
   public void registerFile(String ip, Integer port, String file, long size) throws RemoteException;
+
+  /**
+   * Disconnect a host of files.
+   * @param ip ip of the host
+   * @param port port of the host
+   * @throws RemoteException
+   */
+  public void disconnect(String ip, Integer port) throws RemoteException;
+
+  /**
+   * A daemon has to notify diary every minutes else it is disconnected by the diary.
+   * @return if the host is stillUsed by the Diary
+   * @param ip ip of the host
+   * @param port port of the host
+   * @throws RemoteException
+   */
+  public boolean notifyAlive(String ip, Integer port) throws RemoteException;
 }
