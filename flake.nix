@@ -49,6 +49,7 @@
                   python-pkgs.matplotlib
                   python-pkgs.pyqt6
                   python-pkgs.numpy
+                  python-pkgs.pandas
                 ]))
               ]);
           };
