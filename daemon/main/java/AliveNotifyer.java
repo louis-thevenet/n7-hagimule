@@ -8,9 +8,6 @@ public class AliveNotifyer implements Runnable {
     private Daemon daemon;
     private boolean stillUsed;
 
-	final String diaryStillAliveEndpoint = "/notifyalive";
-
-
     public AliveNotifyer(Daemon d, String url) {
         this.stubUrl = url;
         this.daemon = d;
@@ -20,20 +17,18 @@ public class AliveNotifyer implements Runnable {
     @Override
     public void run() {
         try {
+            System.out.println("Connect to : " + stubUrl);
 			DiaryDaemon register = (DiaryDaemon) Naming.lookup(stubUrl);
             while (stillUsed) {
+                Thread.sleep(60_000);
+                System.out.println("Send notification alive");
                 stillUsed = register.notifyAlive(daemon.daemonAddress, daemon.daemonPort);
-                if (stillUsed) {
-                    Thread.sleep(60_000);
-                }
             }
             daemon.disconnect();
 		} catch (RuntimeException ae) {
-			System.out.println("Failed to register to diary: " + ae.getMessage());
-			System.exit(-1);
+			System.out.println("Failed to notify diary 5: " + ae.getMessage());
 		} catch (Exception ae) {
-			System.out.println("Failed to register to diary: " + ae);
-			System.exit(-1);
+			System.out.println("Failed to notify diary 6: " + ae);
 		}
     }
 

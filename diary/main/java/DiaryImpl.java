@@ -56,14 +56,25 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     return ret.longValue();
   }
 
+  private Host findHost(String ip, Integer port) {
+    Host ret = new Host(ip, port);
+    for (Host host : allTheHost) {
+      if (host.equals(ret)) {
+        return host;
+      }
+    }
+    return null;
+  }
+
   @Override
   public void registerFile(String ip, Integer port, String file, long size) throws RemoteException {
     System.out.println('"' + ip + ':' + port + '"' + "\tregistered: \t" + '[' + file + ']');
 
     // get the host from the list of all Hosts
-    Host h = new Host(ip, port);
-    if (allTheHost.contains(h)) {
-      h = allTheHost.get(allTheHost.indexOf(h));
+    Host h = findHost(ip, port);
+    if (h == null) {
+      h = new Host(ip, port);
+      allTheHost.add(h);
     }
     h.addFile(file);
     List<Host> l = impl.get(file);
@@ -109,16 +120,17 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
 
   @Override
   public boolean notifyAlive(String ip, Integer port) throws RemoteException {
+    System.out.println("NOTIFY ALIVE: \t [" + ip + ":" + port + "]");
     boolean found = false;
-    for (Host host : allTheHost) {
-      if (host.equals(new Host(ip, port))) {
-        host.resetTime();
-        found = true;
-        break;
-      }
+
+    Host h = findHost(ip, port);
+    if (h != null) {
+      found = true;
+      h.resetTime();
     }
+
     // lance une vérification globale si l'interval de confiance expire
-    if (System.currentTimeMillis() - lastVerif > 90) {
+    if (System.currentTimeMillis() - lastVerif > 90_000) {
       verifAlive();
     }
     return found;
@@ -126,7 +138,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
 
   private void verifAlive() {
     for (Host host : allTheHost) {
-      if (System.currentTimeMillis() - host.getTime() > 85) {
+      if (System.currentTimeMillis() - host.getTime() > 85_000) {
         try {
           disconnect(host.getIp(), host.getPort());
         } catch (Exception e) {

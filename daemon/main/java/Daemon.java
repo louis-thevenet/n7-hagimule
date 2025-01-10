@@ -1,3 +1,5 @@
+package main.java;
+
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -19,8 +21,8 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   private int fileCurrentySend = 0;
   private Lock mon = new ReentrantLock();
   private Condition closure = mon.newCondition();
-  private final AliveNotifyer notifyer;
-  private final Thread thNotifyer;
+  private AliveNotifyer notifyer;
+  private Thread thNotifyer;
 
   public void setDiaryAddress(String diaryAddress) {
     this.diaryAddress = diaryAddress;
@@ -42,7 +44,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
 
   private final String diaryDisconnectEndpoint = "/disconnect";
   
-  private final String diaryStillAliveEndpoint = "/notifyalive";
+  private final String diaryStillAliveEndpoint = "/notify-alive";
   
   String daemonAddress;
   Integer daemonPort = 8082;
@@ -65,9 +67,6 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     } catch (UnknownHostException e) {
       System.err.println("Could not retrieve local address");
     }
-    this.notifyer = new AliveNotifyer(this,
-      String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryStillAliveEndpoint);
-    this.thNotifyer = new Thread(notifyer);
   }
 
   /**
@@ -106,10 +105,10 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
         }
       }
     } catch (RuntimeException ae) {
-      System.out.println("Failed to register to diary: " + ae.getMessage());
+      System.out.println("Failed to register to diary 1: " + ae.getMessage());
       System.exit(-1);
     } catch (Exception ae) {
-      System.out.println("Failed to register to diary: " + ae);
+      System.out.println("Failed to register to diary 2: " + ae);
       System.exit(-1);
     }
   }
@@ -134,7 +133,6 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     }
 
     if (file == null) {
-      System.out.println("File not available"); // TODO:should throw exception
       throw new RemoteException("File is not available");
     } else {
       Sender sender = new Sender(file, address, port, offset, size);
@@ -167,8 +165,6 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       System.err.println("Server exception: " + e.toString());
       e.printStackTrace();
     }
-    // lancement du notifyer
-    thNotifyer.start();
   }
 
   public void disconnect() {
@@ -183,11 +179,18 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       }
       System.exit(0);
     } catch (RuntimeException ae) {
-      System.out.println("Failed to register to diary: " + ae.getMessage());
+      System.out.println("Failed to register to diary 3: " + ae.getMessage());
       System.exit(-1);
     } catch (Exception ae) {
-      System.out.println("Failed to register to diary: " + ae);
+      System.out.println("Failed to register to diary 2: " + ae);
       System.exit(-1);
     }
+  }
+
+  public void startNotifying(){
+    notifyer = new AliveNotifyer(this,
+    String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryStillAliveEndpoint);
+    thNotifyer = new Thread(notifyer);
+    thNotifyer.start();
   }
 }

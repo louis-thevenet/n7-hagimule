@@ -129,5 +129,6 @@ public class App {
 
     daemon.notifyDiary();
     daemon.listen();
+    daemon.startNotifying();
   }
 }
