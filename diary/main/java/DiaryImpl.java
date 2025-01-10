@@ -104,18 +104,17 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     System.out.println("DISCONNECT : \t [" + ip + ":" + port + "]");
     
     // get the Host
-    Host h = new Host(ip, port);
-    if (allTheHost.contains(h)) {
-      h = allTheHost.get(allTheHost.indexOf(h));
-    }
-    for (String file : h.getFiles()) {
-      List<Host> assoc = impl.get(file);
-      assoc.remove(h);
-      if (assoc.isEmpty()) {
-        impl.remove(file);
+    Host h = findHost(ip, port);
+    if (h != null) {
+      for (String file : h.getFiles()) {
+        List<Host> assoc = impl.get(file);
+        assoc.remove(h);
+        if (assoc.isEmpty()) {
+          impl.remove(file);
+        }
       }
+      allTheHost.remove(h);
     }
-    allTheHost.remove(h);
   }
 
   @Override
