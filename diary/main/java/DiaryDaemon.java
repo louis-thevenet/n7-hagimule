@@ -21,16 +21,19 @@ public interface DiaryDaemon extends Remote {
 
   /**
    * Disconnect a host of files.
-   * @param ip ip of the host
+   * 
+   * @param ip   ip of the host
    * @param port port of the host
    * @throws RemoteException
    */
   public void disconnect(String ip, Integer port) throws RemoteException;
 
   /**
-   * A daemon has to notify diary every minutes else it is disconnected by the diary.
+   * A daemon has to notify diary every minutes else it is disconnected by the
+   * diary.
+   * 
    * @return if the host is stillUsed by the Diary
-   * @param ip ip of the host
+   * @param ip   ip of the host
    * @param port port of the host
    * @throws RemoteException
    */

@@ -111,7 +111,6 @@ public class App {
 
       logger.info("Diary bound in registry Daemon: " + URL);
 
-
       URL = "//" + diary.address + ":" + port + "/disconnect";
       // Register the object with the naming service
       Naming.rebind(URL, (DiaryDaemon) diary);

@@ -38,9 +38,9 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   final String diaryRegisterEndpoint = "/register";
 
   private final String diaryDisconnectEndpoint = "/disconnect";
-  
+
   private final String diaryStillAliveEndpoint = "/notify-alive";
-  
+
   String daemonAddress;
   Integer daemonPort = 8082;
   final String daemonDownloadEndpoint = "/download";
@@ -174,9 +174,9 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     }
   }
 
-  public void startNotifying(){
+  public void startNotifying() {
     notifyer = new AliveNotifyer(this,
-    String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryStillAliveEndpoint);
+        String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryStillAliveEndpoint);
     thNotifyer = new Thread(notifyer);
     thNotifyer.start();
   }

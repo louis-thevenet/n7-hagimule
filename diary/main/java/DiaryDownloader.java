@@ -14,7 +14,7 @@ public interface DiaryDownloader extends Remote {
    * @throws FileIsNotAvailableException If there is not a Hosts who get the File
    */
   public List<Host> request(String file) throws RemoteException, FileIsNotAvailableException;
-  
+
   /**
    * Returns the size of the requested file.
    *

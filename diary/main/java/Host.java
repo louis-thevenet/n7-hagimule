@@ -67,7 +67,7 @@ public class Host implements Serializable {
 
   @Override
   public boolean equals(Object obj) {
-      Host h = (Host) obj;
-      return h.ip.equals(this.ip) && h.port.equals(port);
+    Host h = (Host) obj;
+    return h.ip.equals(this.ip) && h.port.equals(port);
   }
 }
