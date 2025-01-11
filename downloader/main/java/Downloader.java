@@ -127,17 +127,20 @@ public class Downloader {
     public void run() {
       var worker_id = this.offset / (this.size - 1);
       String id_str = "[" + worker_id + "] ";
+      int port = 4040 + (int) worker_id;
       try {
         // Request a download port from a host
         FileProvider stub = (FileProvider) Naming
             .lookup("//" + h.getIp() + ':' + h.getPort() + "/download");
 
-        Integer tcpPort = stub.download(downloaderAddress, filename, offset, size);
+        int tcpPort = stub.download(downloaderAddress, port, filename, offset, size);
 
-        ServerSocket serverSocket = new ServerSocket(tcpPort);
+        ServerSocket serverSocket = new ServerSocket(port);
         Socket socket = serverSocket.accept();
+        // System.out
+        //     .println(id_str + "Successfully connected to host " + downloaderAddress + ":" + port);
         System.out
-            .println(id_str + "Successfully connected to host " + downloaderAddress + ":" + tcpPort);
+            .println(id_str + "Successfully connected to host " + h.getIp() + ":" + tcpPort);
         System.out.println(id_str + "Downloading from " + offset + " to " + (offset + size) + " of " + filename);
 
         DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));

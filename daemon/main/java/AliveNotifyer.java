@@ -20,13 +20,14 @@ public class AliveNotifyer implements Runnable {
       System.out.println("Connect to : " + stubUrl);
       DiaryDaemon register = (DiaryDaemon) Naming.lookup(stubUrl);
       while (stillUsed) {
-        Thread.sleep(60_000);
+        Thread.sleep(80_000);
         System.out.println("Send notification alive");
-        stillUsed = register.notifyAlive(daemon.daemonAddress, daemon.daemonPort);
+        stillUsed = register.notifyAlive(daemon.getDaemonAddress(), daemon.getDaemonPort());
       }
       daemon.disconnect();
     } catch (RuntimeException ae) {
-      System.out.println("Failed to notify diary 5: " + ae.getMessage());
+      System.out.println("Failed to notify diary 5: " + ae);
+      ae.printStackTrace();
     } catch (Exception ae) {
       System.out.println("Failed to notify diary 6: " + ae);
     }

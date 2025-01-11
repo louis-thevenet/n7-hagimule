@@ -13,17 +13,19 @@ public class Sender extends Thread {
   Integer port;
   private long offset;
   private long size;
+  private Integer fileCSend;
 
-  public Sender(File file, String address, Integer port, long offset, long size) {
+  public Sender(File file, String address, Integer port, long offset, long size, Integer fileCSend) {
     this.file = file;
     this.address = address;
     this.port = port;
     this.offset = offset;
     this.size = size;
+    this.fileCSend = fileCSend;
   }
 
   public void run() {
-
+    fileCSend++;
     System.out.println("Sending " + file.getName() + " to " + address + ":" + port);
     boolean success = false;
     while (!success) {
@@ -62,6 +64,6 @@ public class Sender extends Thread {
         System.out.println("Failed to connect to downloader: " + e + "\n Retrying...");
       }
     }
-
+    fileCSend--;
   }
 }

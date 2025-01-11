@@ -15,7 +15,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   File[] availableFiles;
   String diaryAddress;
   Integer diaryPort = 8081;
-  private int fileCurrentySend = 0;
+  private Integer fileCurrentlySend = 0;
   private AliveNotifyer notifyer;
   private Thread thNotifyer;
 
@@ -101,6 +101,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       }
     } catch (RuntimeException ae) {
       System.out.println("Failed to register to diary 1: " + ae.getMessage());
+      ae.printStackTrace();
       System.exit(-1);
     } catch (Exception ae) {
       System.out.println("Failed to register to diary 2: " + ae);
@@ -109,9 +110,9 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   }
 
   @Override
-  public int download(String address, String filename, long offset, long size) throws RemoteException {
-    fileCurrentySend++;
-    int port = daemonPort + 1;
+  public int download(String address, int downloaderPort, String filename, long offset, long size)
+      throws RemoteException {
+    int port = daemonPort + fileCurrentlySend;
     System.out.println("Allocated port " + port + " for " + address);
     System.out.println("Sending " + filename);
     System.out.println("Chunk size " + size);
@@ -130,11 +131,10 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     if (file == null) {
       throw new RemoteException("File is not available");
     } else {
-      Sender sender = new Sender(file, address, port, offset, size);
+      Sender sender = new Sender(file, address, downloaderPort, offset, size, fileCurrentlySend);
       sender.start();
     }
-    fileCurrentySend--;
-
+    fileCurrentlySend--;
     return port;
   }
 
@@ -161,7 +161,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
 
       register.disconnect(daemonAddress, daemonPort);
       thNotifyer.interrupt();
-      while (fileCurrentySend > 0) {
+      while (fileCurrentlySend > 0) {
         Thread.sleep(100);
       }
       System.exit(0);
@@ -180,4 +180,13 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     thNotifyer = new Thread(notifyer);
     thNotifyer.start();
   }
+
+  public String getDaemonAddress() {
+    return daemonAddress;
+  }
+
+  public Integer getDaemonPort() {
+    return daemonPort;
+  }
+
 }
