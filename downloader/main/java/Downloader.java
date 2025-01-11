@@ -79,10 +79,14 @@ public class Downloader {
       for (Host h : hosts) {
         long offset = i * taskSize;
         if (i == hosts.size() - 1) {
-          taskSize += 1;
+          jobs.add(new InnerDownloader(h, filename, offset, sizeOfFile - offset, channel));
+          System.out
+              .println("Host " + h.getIp() + " : " + i + " : " + offset + " -> " + (offset + sizeOfFile - offset + 1));
+        } else {
+
+          jobs.add(new InnerDownloader(h, filename, offset, taskSize, channel));
+          System.out.println("Host " + h.getIp() + " : " + i + " : " + offset + " -> " + (offset + taskSize));
         }
-        jobs.add(new InnerDownloader(h, filename, offset, taskSize, channel));
-        System.out.println("Host " + h.getIp() + " : " + i + " : " + offset);
         i++;
       }
       // Jobs start
@@ -121,7 +125,7 @@ public class Downloader {
     }
 
     public void run() {
-      var worker_id = this.offset / this.size;
+      var worker_id = this.offset / (this.size - 1);
       String id_str = "[" + worker_id + "] ";
       try {
         // Request a download port from a host
