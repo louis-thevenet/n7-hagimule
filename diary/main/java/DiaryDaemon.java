@@ -21,7 +21,8 @@ public interface DiaryDaemon extends Remote {
 
   /**
    * Disconnect a host of files.
-   * @param ip ip of the host
+   * 
+   * @param ip   ip of the host
    * @param port port of the host
    * @throws RemoteException
    */
