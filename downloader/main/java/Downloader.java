@@ -44,15 +44,15 @@ public class Downloader {
       System.err.println("File is not available at the moment: " + e.getMessage());
     }
 
-    System.out.println("Available hosts:");
-    for (Host h : hosts) {
-      System.out.println(h.getIp());
-    }
-
-    System.out.println("File size: " + sizeOfFile);
-
     // Download from hosts
     if (hosts.size() > 0) {
+
+      System.out.println("Available hosts:");
+      for (Host h : hosts) {
+        System.out.println(h.getIp());
+      }
+
+      System.out.println("File size: " + sizeOfFile);
 
       // size of Download done by each source
       long taskSize = sizeOfFile / hosts.size();
@@ -79,10 +79,14 @@ public class Downloader {
       for (Host h : hosts) {
         long offset = i * taskSize;
         if (i == hosts.size() - 1) {
-          taskSize += 1;
+          jobs.add(new InnerDownloader(h, filename, offset, sizeOfFile - offset, channel));
+          System.out
+              .println("Host " + h.getIp() + " : " + i + " : " + offset + " -> " + (offset + sizeOfFile - offset + 1));
+        } else {
+
+          jobs.add(new InnerDownloader(h, filename, offset, taskSize, channel));
+          System.out.println("Host " + h.getIp() + " : " + i + " : " + offset + " -> " + (offset + taskSize));
         }
-        jobs.add(new InnerDownloader(h, filename, offset, taskSize, channel));
-        System.out.println("Host " + h.getIp() + " : " + i + " : " + offset);
         i++;
       }
       // Jobs start
@@ -121,19 +125,22 @@ public class Downloader {
     }
 
     public void run() {
-      var worker_id = this.offset / this.size;
+      var worker_id = this.offset / (this.size - 1);
       String id_str = "[" + worker_id + "] ";
+      int port = 4040 + (int) worker_id;
       try {
         // Request a download port from a host
         FileProvider stub = (FileProvider) Naming
             .lookup("//" + h.getIp() + ':' + h.getPort() + "/download");
 
-        Integer tcpPort = stub.download(downloaderAddress, filename, offset, size);
+        int tcpPort = stub.download(downloaderAddress, port, filename, offset, size);
 
-        ServerSocket serverSocket = new ServerSocket(tcpPort);
+        ServerSocket serverSocket = new ServerSocket(port);
         Socket socket = serverSocket.accept();
+        // System.out
+        //     .println(id_str + "Successfully connected to host " + downloaderAddress + ":" + port);
         System.out
-            .println(id_str + "Successfully connected to host " + downloaderAddress + ":" + tcpPort);
+            .println(id_str + "Successfully connected to host " + h.getIp() + ":" + tcpPort);
         System.out.println(id_str + "Downloading from " + offset + " to " + (offset + size) + " of " + filename);
 
         DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
@@ -169,10 +176,8 @@ public class Downloader {
       } catch (MalformedURLException | RemoteException | NotBoundException e) {
         System.err.println("Could not retrieve FileProvider RMI: " + e);
       } catch (UnknownHostException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       } catch (IOException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
     }

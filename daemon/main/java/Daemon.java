@@ -15,6 +15,9 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   File[] availableFiles;
   String diaryAddress;
   Integer diaryPort = 8081;
+  private Integer fileCurrentlySend = 0;
+  private AliveNotifyer notifyer;
+  private Thread thNotifyer;
 
   public void setDiaryAddress(String diaryAddress) {
     this.diaryAddress = diaryAddress;
@@ -33,6 +36,10 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   }
 
   final String diaryRegisterEndpoint = "/register";
+
+  private final String diaryDisconnectEndpoint = "/disconnect";
+
+  private final String diaryStillAliveEndpoint = "/notify-alive";
 
   String daemonAddress;
   Integer daemonPort = 8082;
@@ -93,18 +100,19 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
         }
       }
     } catch (RuntimeException ae) {
-      System.out.println("Failed to register to diary: " + ae.getMessage());
+      System.out.println("Failed to register to diary Runtime: " + ae);
+      ae.printStackTrace();
       System.exit(-1);
     } catch (Exception ae) {
-      System.out.println("Failed to register to diary: " + ae);
+      System.out.println("Failed to register to diary Exception: " + ae);
       System.exit(-1);
     }
   }
 
   @Override
-  public int download(String address, String filename, long offset, long size) throws RemoteException {
-
-    int port = daemonPort + 1;
+  public int download(String address, int downloaderPort, String filename, long offset, long size)
+      throws RemoteException {
+    int port = daemonPort + fileCurrentlySend;
     System.out.println("Allocated port " + port + " for " + address);
     System.out.println("Sending " + filename);
     System.out.println("Chunk size " + size);
@@ -121,12 +129,12 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     }
 
     if (file == null) {
-      System.out.println("File not available"); // TODO:should throw exception
+      throw new RemoteException("File is not available");
     } else {
-      Sender sender = new Sender(file, address, port, offset, size);
+      Sender sender = new Sender(file, address, downloaderPort, offset, size, fileCurrentlySend);
       sender.start();
     }
-
+    fileCurrentlySend--;
     return port;
   }
 
@@ -144,6 +152,44 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       System.err.println("Server exception: " + e.toString());
       e.printStackTrace();
     }
+  }
+
+  public void shutdown(boolean thInterrupt) {
+    try {
+      DiaryDaemon register = (DiaryDaemon) Naming
+          .lookup(String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryDisconnectEndpoint);
+      System.out.println("send disconnect notification");
+      register.disconnect(daemonAddress, daemonPort);
+      if (thInterrupt) {
+        thNotifyer.interrupt();
+      }
+      System.out.println("Shutdown Daemon");
+    } catch (RuntimeException ae) {
+      System.out.println("Failed to register to diary Runtime: " + ae.getCause());
+      System.exit(-1);
+    } catch (Exception ae) {
+      System.out.println("Failed to register to diary Exception: " + ae);
+      System.exit(-1);
+    }
+  }
+
+  public void startNotifying() {
+    notifyer = new AliveNotifyer(this,
+        String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryStillAliveEndpoint);
+    thNotifyer = new Thread(notifyer);
+    thNotifyer.start();
+  }
+
+  public String getDaemonAddress() {
+    return daemonAddress;
+  }
+
+  public Integer getDaemonPort() {
+    return daemonPort;
+  }
+
+  public AliveNotifyer getNotifyer() {
+    return this.notifyer;
   }
 
 }

@@ -111,10 +111,24 @@ public class App {
 
       logger.info("Diary bound in registry Daemon: " + URL);
 
+      URL = "//" + diary.address + ":" + port + "/disconnect";
+      // Register the object with the naming service
+      Naming.rebind(URL, (DiaryDaemon) diary);
+
+      logger.info("Diary bound in registry Daemon: " + URL);
+
+      URL = "//" + diary.address + ":" + port + "/notify-alive";
+      // Register the object with the naming service
+      Naming.rebind(URL, (DiaryDaemon) diary);
+
+      logger.info("Diary bound in registry Daemon: " + URL);
+
       URL = "//" + diary.address + ":" + port + "/request";
       // Register the object with the naming service
       Naming.rebind(URL, (DiaryDownloader) diary);
       logger.info("Diary bound in registry Downloader: " + URL);
+
+      logger.info("Start listening ...");
     } catch (Exception e) {
       exit_with_error("Server exception: " + e.toString());
     }

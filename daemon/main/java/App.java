@@ -10,6 +10,23 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 public class App {
+
+  private static class ShutdownHook implements Runnable {
+
+    private Daemon d;
+
+    private ShutdownHook(Daemon d) {
+      this.d = d;
+    }
+
+    @Override
+    public void run() {
+      System.out.println("Shutdown App");
+      d.shutdown(true);
+    }
+    
+  }
+
   static String homeDir = System.getProperty("user.home");
   static String defaultFilesPath = homeDir + "/Downloads/";
 
@@ -124,10 +141,12 @@ public class App {
       formatter.printHelp("daemon", createOptions());
       System.exit(-1);
     }
-
+    
     Daemon daemon = createDaemon(cmd);
+    Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(daemon)));
 
     daemon.notifyDiary();
     daemon.listen();
+    daemon.startNotifying();
   }
 }
