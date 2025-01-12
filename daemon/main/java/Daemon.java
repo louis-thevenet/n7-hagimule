@@ -100,11 +100,11 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
         }
       }
     } catch (RuntimeException ae) {
-      System.out.println("Failed to register to diary 1: " + ae.getMessage());
+      System.out.println("Failed to register to diary Runtime: " + ae);
       ae.printStackTrace();
       System.exit(-1);
     } catch (Exception ae) {
-      System.out.println("Failed to register to diary 2: " + ae);
+      System.out.println("Failed to register to diary Exception: " + ae);
       System.exit(-1);
     }
   }
@@ -154,22 +154,21 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     }
   }
 
-  public void disconnect() {
+  public void shutdown(boolean thInterrupt) {
     try {
       DiaryDaemon register = (DiaryDaemon) Naming
           .lookup(String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryDisconnectEndpoint);
-
+      System.out.println("send disconnect notification");
       register.disconnect(daemonAddress, daemonPort);
-      thNotifyer.interrupt();
-      while (fileCurrentlySend > 0) {
-        Thread.sleep(100);
+      if (thInterrupt) {
+        thNotifyer.interrupt();
       }
-      System.exit(0);
+      System.out.println("Shutdown Daemon");
     } catch (RuntimeException ae) {
-      System.out.println("Failed to register to diary 3: " + ae.getMessage());
+      System.out.println("Failed to register to diary Runtime: " + ae.getCause());
       System.exit(-1);
     } catch (Exception ae) {
-      System.out.println("Failed to register to diary 2: " + ae);
+      System.out.println("Failed to register to diary Exception: " + ae);
       System.exit(-1);
     }
   }
@@ -187,6 +186,10 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
 
   public Integer getDaemonPort() {
     return daemonPort;
+  }
+
+  public AliveNotifyer getNotifyer() {
+    return this.notifyer;
   }
 
 }

@@ -24,12 +24,15 @@ public class AliveNotifyer implements Runnable {
         System.out.println("Send notification alive");
         stillUsed = register.notifyAlive(daemon.getDaemonAddress(), daemon.getDaemonPort());
       }
-      daemon.disconnect();
+      System.out.println("Start daemon.disconnect()");
+      daemon.shutdown(false);
+    } catch (InterruptedException ae) {
+      System.out.println("Shutdown Notifyer");
     } catch (RuntimeException ae) {
-      System.out.println("Failed to notify diary 5: " + ae);
+      System.out.println("Failed to notify diary Runtime: " + ae);
       ae.printStackTrace();
     } catch (Exception ae) {
-      System.out.println("Failed to notify diary 6: " + ae);
+      System.out.println("Failed to notify diary Exception: " + ae);
     }
   }
 
