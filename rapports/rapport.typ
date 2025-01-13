@@ -44,3 +44,11 @@ Les `FileChannel` nous ont fait passer de 29s à 12s pour un fichier de 1Gb tél
   [$#calc.round(res_130M_8_10MS.at("min"), digits:2)$],
   [$#calc.round(res_130M_8_10MS.at("max"), digits:2)$],
 )
+
+= Rapport du 10/01
+Implémenté la déconnection des démons (le Diary ne le propose plus dans les requeêtes de téléchargement).
+#figure(
+  caption: "Temps de téléchargment en fonction du nombre de démons avec 10ms de délai tous les 64Ko (10 itérations par point)",
+)[
+  #image("./plot_130M_10ms.svg", height: 30%)
+]
