@@ -1,0 +1,28 @@
+{
+  "results": [
+    {
+      "command": "java21 -jar downloader/build/libs/downloader-all.jar --path /work -dii basilic 130M",
+      "mean": 3.7918398997,
+      "stddev": 0.007247716374972622,
+      "median": 3.7931641087,
+      "user": 0.72871574,
+      "system": 0.4284438399999999,
+      "min": 3.7819371127,
+      "max": 3.8009931737,
+      "times": [
+        3.8009931737,
+        3.7931641087,
+        3.7951823787,
+        3.7819371127,
+        3.7879227247
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}
