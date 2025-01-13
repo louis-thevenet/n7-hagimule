@@ -10,24 +10,45 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
+/** DiaryImpl is a server which get the name of Hosts and the files they can provide. */
 public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, DiaryDaemon {
 
-  /** Diary implementation. */
+  /** Diary implementation : a hashMap of filenames and a list of hosts. */
   private HashMap<String, List<Host>> impl = new HashMap<>();
+  /** a HashMap of filenames and int for the size. */
   private HashMap<String, Long> sizes = new HashMap<>();
+  /** List of all the Host register in the Diary. */
   private List<Host> allTheHost = new ArrayList<>();
+
+  /** Logger register the activity. */
   Logger logger;
+  
+  /** The ip address of the diary. */
   String address;
+  
+  /** The time of the last verification of alive daemons. */
   private long lastVerif = System.currentTimeMillis();
 
+  /**
+   * Set the address of the diary.
+   * @param address the new value.
+   */
   public void setAddress(String address) {
     this.address = address;
   }
 
+  /**
+   * Set the logger.
+   * @param logger the new value.
+   */
   public void setLogger(Logger logger) {
     this.logger = logger;
   }
 
+  /**
+   * Builder a Diary
+   * @throws RemoteException
+   */
   public DiaryImpl() throws RemoteException {
     logger = java.util.logging.Logger.getLogger("Diary");
     try {
@@ -37,10 +58,14 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     }
   };
 
+
   @Override
   public List<Host> request(String file) throws RemoteException, FileIsNotAvailableException {
+    // check daemon alive
     verifAliveIfNecessary();
     System.out.println("REQUEST : \t[" + file + "]");
+
+    // get the list of Host which provide
     List<Host> ret = impl.get(file);
     if (ret == null) {
       throw new FileIsNotAvailableException("No registered host providing this file at the moment.");
@@ -50,6 +75,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
 
   @Override
   public long sizeOf(String file) throws RemoteException, FileIsNotAvailableException {
+    // check daemon alive
     verifAliveIfNecessary();
     System.out.println("SIZEOF : \t[" + file + "]");
     Long ret = sizes.get(file);
@@ -59,6 +85,12 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     return ret.longValue();
   }
 
+  /**
+   * Finds the host in the allTheHost list.
+   * @param ip the ip of the Host.
+   * @param port the port of the Host.
+   * @return the Host or null if not found.
+   */
   private Host findHost(String ip, Integer port) {
     Host ret = new Host(ip, port);
     for (Host host : allTheHost) {
@@ -80,14 +112,20 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
       h = new Host(ip, port);
       allTheHost.add(h);
     }
+    // add the file to the host in the list
     h.addFile(file);
+
+    // get the list for the file
     List<Host> l = impl.get(file);
+
+    // create a list
     if (l == null) {
       l = new LinkedList<>();
       l.add(h);
       impl.put(file, l);
       sizes.put(file, size);
     } else {
+      // check if the size of the file is the same
       if (sizes.get(file) == size) {
         l.add(h);
       } else {
@@ -105,6 +143,11 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     return res;
   }
 
+  /**
+   * Remove a host from all list, remove the file if there 
+   * are no more provider.
+   * @param h the host to remove.
+   */
   private void removeFromLists(Host h) {
     Iterator<String> iter = h.getFiles().iterator();
     while (iter.hasNext()) {
@@ -127,6 +170,9 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     removeFromLists(h);
   }
 
+  /**
+   * launch verifAlive if the last check is too much late.
+   */
   private void verifAliveIfNecessary() {
     // lance une vérification globale si l'interval de confiance expire
     if (System.currentTimeMillis() - lastVerif > 90_000) {
@@ -147,8 +193,12 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     return found;
   }
 
+  /**
+   * Check if each host is still alive.
+   */
   private void verifAlive() {
     for (Host host : allTheHost) {
+      // no signal 85 s -> remove from lists
       if (System.currentTimeMillis() - host.getTime() > 85_000) {
         try {
           removeFromLists(host);

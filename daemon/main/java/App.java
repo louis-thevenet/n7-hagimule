@@ -88,7 +88,7 @@ public class App {
 
   /**
    * Exit the App with an error.
-   * @param error
+   * @param error the error message.
    */
   static void exitWithError(String error) {
     System.err.println(error);
@@ -100,7 +100,7 @@ public class App {
    * Handler of the CLI.
    * @param args args of the command line.
    * @return A object Command line with the command line info parsed.
-   * @throws ParseException
+   * @throws ParseException if the parse failed.
    */
   static CommandLine handleCLI(String[] args) throws ParseException {
     Options options = createOptions();

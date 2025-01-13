@@ -14,7 +14,9 @@ public interface DiaryDaemon extends Remote {
    * Register a fie into the Diary.
    *
    * @param ip   The ipAddress of the host
+   * @param port The port of the host
    * @param file The name of the available file
+   * @param size The size of the part of file to send
    * @throws RemoteException if the size is different
    */
   public void registerFile(String ip, Integer port, String file, long size) throws RemoteException;

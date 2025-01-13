@@ -20,10 +20,17 @@ import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+/** Downloader request a file. */
 public class Downloader {
-  String diaryAddress;
-  String downloadPath;
-  String downloaderAddress;
+
+  /** The diary ip address */
+  private String diaryAddress;
+
+  /** The path of the dir where the files has to be download. */
+  private String downloadPath;
+
+  /** The address of the downloader. */
+  private String downloaderAddress;
 
   public void download(String filename) {
     // Get host list from Diary
@@ -31,10 +38,13 @@ public class Downloader {
     System.out.println("Requesting host list for: " + filename);
     long sizeOfFile = 0;
     try {
+      // connect
       DiaryDownloader stub = (DiaryDownloader) Naming
           .lookup("//" + diaryAddress + ":" + diaryPort.toString() + "/" + diaryRequestEndpoint);
 
+      // get the the list.
       hosts = stub.request(filename);
+      // get the size of the file
       sizeOfFile = stub.sizeOf(filename);
 
     } catch (MalformedURLException | RemoteException | NotBoundException e) {
@@ -108,14 +118,34 @@ public class Downloader {
     }
   }
 
+  /**
+   * Inner Thread to download a part of a file
+   */
   public class InnerDownloader implements Runnable {
 
+    /** The host. */
     private Host h;
+    
+    /** The offset of the part. */
     private long offset;
+
+    /** The size of the part. */
     private long size;
+
+    /** The filename. */
     private String filename;
+
+    /** The output. */
     private FileChannel output;
 
+    /**
+     * Builder of a InnerDownloader.
+     * @param h the host.
+     * @param filename the filename.
+     * @param offset the offset of the part of file.
+     * @param size the size of the part.
+     * @param output the output.
+     */
     public InnerDownloader(Host h, String filename, long offset, long size, FileChannel output) {
       this.h = h;
       this.offset = offset;
@@ -124,27 +154,29 @@ public class Downloader {
       this.filename = filename;
     }
 
+    /**Procedure of the Thread. */
+    @Override
     public void run() {
-      var worker_id = this.offset / (this.size - 1);
+      long worker_id = this.offset / (this.size - 1);
       String id_str = "[" + worker_id + "] ";
       int port = 4040 + (int) worker_id;
       try {
         // Request a download port from a host
         FileProvider stub = (FileProvider) Naming
             .lookup("//" + h.getIp() + ':' + h.getPort() + "/download");
-
         int tcpPort = stub.download(downloaderAddress, port, filename, offset, size);
 
+        // set up the server socket
         ServerSocket serverSocket = new ServerSocket(port);
         Socket socket = serverSocket.accept();
-        // System.out
-        //     .println(id_str + "Successfully connected to host " + downloaderAddress + ":" + port);
         System.out
             .println(id_str + "Successfully connected to host " + h.getIp() + ":" + tcpPort);
         System.out.println(id_str + "Downloading from " + offset + " to " + (offset + size) + " of " + filename);
 
+        // set up communication
         DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 
+        // handle reception
         int bytes = 0;
         int bytesTotal = 0;
         int bufferSize = 64 * 1024;
@@ -153,12 +185,9 @@ public class Downloader {
             && (bytes = in.read(
                 buffer.array(), 0,
                 (int) Math.min(buffer.capacity(), size))) != -1) {
-          // System.out.println(id_str + "Got " + bytes + " bytes");
-          // System.out.println(id_str + "From " + (offset + bytesTotal) + " to " +
-          // (offset + bytesTotal + bytes));
 
           if (bytes < bufferSize) {
-            var old = buffer.array();
+            byte[] old = buffer.array();
             buffer.clear();
             buffer.put(old, 0, bytes); // Add only the read data to the buffer
           }
@@ -169,6 +198,7 @@ public class Downloader {
           bytesTotal += bytes;
         }
 
+        // close communication
         in.close();
         socket.close();
         serverSocket.close();
@@ -184,25 +214,47 @@ public class Downloader {
 
   }
 
+  /**
+   * Set the downloader address.
+   * @param downloaderAddress the ip address.
+   */
   public void setDownloaderAddress(String downloaderAddress) {
     this.downloaderAddress = downloaderAddress;
   }
 
+  /**
+   * Set the downloader path.
+   * @param downloadPath the path.
+   */
   public void setDownloadPath(String downloadPath) {
     this.downloadPath = downloadPath;
   }
 
+  /**
+   * Set the diary
+   * @param diaryAddress the ip address.
+   */
   public void setDiaryAddress(String diaryAddress) {
     this.diaryAddress = diaryAddress;
   }
 
+  /**
+   * Set the diary port
+   * @param diaryPort the port number.
+   */
   public void setDiaryPort(Integer diaryPort) {
     this.diaryPort = diaryPort;
   }
 
-  Integer diaryPort = 8081;
-  final String diaryRequestEndpoint = "request";
+  /** The diary port. */
+  private Integer diaryPort = 8081;
 
+  /** The end of the url of the stub. */
+  private final String diaryRequestEndpoint = "request";
+
+  /**
+   * Builder of a Downloader.
+   */
   public Downloader() {
     try {
       // Defaults to localhost
@@ -216,6 +268,9 @@ public class Downloader {
     }
   }
 
+  /**
+   * List the files available in the diary in the prompt.
+   */
   public void listFiles() {
     System.out.println("Listing files from: " + "//" + diaryAddress + ":" + diaryPort + "/" + diaryRequestEndpoint);
     System.out.println("Available files:");
@@ -232,6 +287,5 @@ public class Downloader {
       System.err.println("Could not retrieve file list from diary: " + e);
       e.printStackTrace();
     }
-
   }
 }
