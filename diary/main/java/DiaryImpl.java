@@ -15,22 +15,25 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
 
   /** Diary implementation : a hashMap of filenames and a list of hosts. */
   private HashMap<String, List<Host>> impl = new HashMap<>();
+
   /** a HashMap of filenames and int for the size. */
   private HashMap<String, Long> sizes = new HashMap<>();
+
   /** List of all the Host register in the Diary. */
   private List<Host> allTheHost = new ArrayList<>();
 
   /** Logger register the activity. */
   Logger logger;
-  
+
   /** The ip address of the diary. */
   String address;
-  
+
   /** The time of the last verification of alive daemons. */
   private long lastVerif = System.currentTimeMillis();
 
   /**
    * Set the address of the diary.
+   *
    * @param address the new value.
    */
   public void setAddress(String address) {
@@ -39,6 +42,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
 
   /**
    * Set the logger.
+   *
    * @param logger the new value.
    */
   public void setLogger(Logger logger) {
@@ -47,6 +51,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
 
   /**
    * Builder a Diary
+   *
    * @throws RemoteException
    */
   public DiaryImpl() throws RemoteException {
@@ -56,8 +61,8 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     } catch (Exception e) {
       System.out.println("Failed to retrieve local address");
     }
-  };
-
+  }
+  ;
 
   @Override
   public List<Host> request(String file) throws RemoteException, FileIsNotAvailableException {
@@ -68,7 +73,8 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     // get the list of Host which provide
     List<Host> ret = impl.get(file);
     if (ret == null) {
-      throw new FileIsNotAvailableException("No registered host providing this file at the moment.");
+      throw new FileIsNotAvailableException(
+          "No registered host providing this file at the moment.");
     }
     return ret;
   }
@@ -80,13 +86,15 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     System.out.println("SIZEOF : \t[" + file + "]");
     Long ret = sizes.get(file);
     if (ret == null) {
-      throw new FileIsNotAvailableException("No registered host providing this file at the moment.");
+      throw new FileIsNotAvailableException(
+          "No registered host providing this file at the moment.");
     }
     return ret.longValue();
   }
 
   /**
    * Finds the host in the allTheHost list.
+   *
    * @param ip the ip of the Host.
    * @param port the port of the Host.
    * @return the Host or null if not found.
@@ -144,8 +152,8 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
   }
 
   /**
-   * Remove a host from all list, remove the file if there 
-   * are no more provider.
+   * Remove a host from all list, remove the file if there are no more provider.
+   *
    * @param h the host to remove.
    */
   private void removeFromLists(Host h) {
@@ -170,9 +178,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     removeFromLists(h);
   }
 
-  /**
-   * launch verifAlive if the last check is too much late.
-   */
+  /** launch verifAlive if the last check is too much late. */
   private void verifAliveIfNecessary() {
     // lance une vérification globale si l'interval de confiance expire
     if (System.currentTimeMillis() - lastVerif > 90_000) {
@@ -193,9 +199,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
     return found;
   }
 
-  /**
-   * Check if each host is still alive.
-   */
+  /** Check if each host is still alive. */
   private void verifAlive() {
     for (Host host : allTheHost) {
       // no signal 85 s -> remove from lists

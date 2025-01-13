@@ -2,22 +2,24 @@ package main.java;
 
 import java.rmi.Naming;
 
-/**AliveNotifyer is a thread which notify the diary of the health level
- * of the daemon. And stop the deamon if the diary has disconnected it.
+/**
+ * AliveNotifyer is a thread which notify the diary of the health level of the daemon. And stop the
+ * deamon if the diary has disconnected it.
  */
 public class AliveNotifyer implements Runnable {
 
-  /**The url of the stub. */
+  /** The url of the stub. */
   private final String stubUrl;
 
-  /**The daemon inspected. */
+  /** The daemon inspected. */
   private Daemon daemon;
-  
-  /**If the diary still use the daemon. */
+
+  /** If the diary still use the daemon. */
   private boolean stillUsed;
 
   /**
    * Builder with the Deamon and the url.
+   *
    * @param d the deamon.
    * @param url the url of the stub.
    */
@@ -27,9 +29,7 @@ public class AliveNotifyer implements Runnable {
     this.stillUsed = true;
   }
 
-  /**
-   * Procedure run to notify the diary.
-   */
+  /** Procedure run to notify the diary. */
   @Override
   public void run() {
     try {
@@ -64,10 +64,10 @@ public class AliveNotifyer implements Runnable {
 
   /**
    * Get the sitllUsed Variable
+   *
    * @return stillUsed
    */
   public boolean getStillUsed() {
     return stillUsed;
   }
-
 }

@@ -5,7 +5,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -14,15 +13,14 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-/**
- * App launch a Diary and handle the command line.
- */
+/** App launch a Diary and handle the command line. */
 public class App {
   /** The default port for a diary. */
   public static final int defaultPort = 8081;
 
   /**
    * Create all the options menu for the CLI (Command Line Interface).
+   *
    * @return the options menu.
    */
   public static Options create_options() {
@@ -43,6 +41,7 @@ public class App {
 
   /**
    * Exit the App with an error.
+   *
    * @param error the error message.
    */
   static void exitWithError(String error) {
@@ -52,6 +51,7 @@ public class App {
 
   /**
    * Handler of the CLI.
+   *
    * @param args args of the command line.
    * @return A object Command line with the command line info parsed.
    * @throws ParseException if the parse failed.
@@ -67,6 +67,7 @@ public class App {
 
   /**
    * Main method of the Class.
+   *
    * @param args args of the command line
    */
   public static void main(String[] args) {
@@ -122,7 +123,7 @@ public class App {
     try {
       diary = new DiaryImpl();
       diary.setLogger(logger);
-      
+
       // set address
       if (cmd.hasOption("i")) {
         String address = cmd.getOptionValue("i");
@@ -135,7 +136,7 @@ public class App {
     try {
       System.setProperty("jave.rmi.server.hostname", diary.address);
       String URL = "//" + diary.address + ":" + port + "/register";
-      
+
       // Register the object with the naming service to register file.
       Naming.rebind(URL, (DiaryDaemon) diary);
       logger.info("Diary bound in registry Daemon: " + URL);

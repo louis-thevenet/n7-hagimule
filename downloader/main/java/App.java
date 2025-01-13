@@ -2,20 +2,17 @@ package main.java;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
 
-/**
- * App launch a Downloader app.
- */
+/** App launch a Downloader app. */
 public class App {
-  
+
   /** The default port number for the app */
   public static final int defaultPort = 8081;
 
@@ -31,9 +28,12 @@ public class App {
     Option ls = new Option("l", "list", false, "Request a list of available files");
 
     Option pathOpt = new Option("p", "path", true, "Path to store downloaded files");
-    Option downloaderAddressOpt = new Option("doi", "downloader-ip", true, "Address to use to download files");
-    Option diaryAddressOpt = new Option("dii", "diary-ip", true, "Address to use to register files to the diary");
-    Option diaryPortOpt = new Option("dip", "diary-port", true, "Port to use to register files to the diary");
+    Option downloaderAddressOpt =
+        new Option("doi", "downloader-ip", true, "Address to use to download files");
+    Option diaryAddressOpt =
+        new Option("dii", "diary-ip", true, "Address to use to register files to the diary");
+    Option diaryPortOpt =
+        new Option("dip", "diary-port", true, "Port to use to register files to the diary");
 
     options.addOption(help);
     options.addOption(ls);
@@ -47,12 +47,12 @@ public class App {
 
   /**
    * Stop the program.
+   *
    * @param error the string of the error.
    */
   static void exitWithError(String error) {
     System.err.println(error);
     System.exit(-1);
-
   }
 
   /**
@@ -108,7 +108,6 @@ public class App {
     exitWithError("No address found for dirary");
     return null;
   }
-
 
   /**
    * Main function.

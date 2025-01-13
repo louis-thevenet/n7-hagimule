@@ -4,8 +4,9 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
-/** DiaryDownloader allow a downloader to access method that he is
- * allowed to access. So he can't register a file to the diary.
+/**
+ * DiaryDownloader allow a downloader to access method that he is allowed to access. So he can't
+ * register a file to the diary.
  */
 public interface DiaryDownloader extends Remote {
   /**
@@ -30,9 +31,8 @@ public interface DiaryDownloader extends Remote {
 
   /**
    * Returns an array of files ready to download.
-   * 
+   *
    * @return all files available to download
    */
   public List<String> listFiles() throws RemoteException;
-
 }

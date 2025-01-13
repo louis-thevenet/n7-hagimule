@@ -4,13 +4,12 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.net.Socket;
-
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- * Sender is a Thread charged to send a part of file by a Socket to the serverSocket
- * gifted in the builder.
+ * Sender is a Thread charged to send a part of file by a Socket to the serverSocket gifted in the
+ * builder.
  */
 public class Sender extends Thread {
   /** The file to send. */
@@ -24,7 +23,7 @@ public class Sender extends Thread {
 
   /** The offset of the part of file. */
   private long offset;
-  
+
   /** The size of the part of file to send. */
   private long size;
 
@@ -33,6 +32,7 @@ public class Sender extends Thread {
 
   /**
    * Builder of a Sender.
+   *
    * @param file the file to send.
    * @param address the ip address of the downloader.
    * @param port the port of the downloader.
@@ -40,7 +40,8 @@ public class Sender extends Thread {
    * @param size the size of the part of file to send.
    * @param fileCSend the object of the number of file currently send.
    */
-  public Sender(File file, String address, Integer port, long offset, long size, Integer fileCSend) {
+  public Sender(
+      File file, String address, Integer port, long offset, long size, Integer fileCSend) {
     this.file = file;
     this.address = address;
     this.port = port;
@@ -49,9 +50,7 @@ public class Sender extends Thread {
     this.fileCSend = fileCSend;
   }
 
-  /**
-   * Procedure of the Thread.
-   */
+  /** Procedure of the Thread. */
   @Override
   public void run() {
     // increment the numbre of file send
@@ -79,7 +78,8 @@ public class Sender extends Thread {
         int bytesTotal = 0;
         int bufferSize = 64 * 1024;
         ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
-        while (bytesTotal <= size && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
+        while (bytesTotal <= size
+            && (bytes = fileInputStream.read(buffer, offset + bytesTotal)) != -1) {
           buffer.flip();
           int to_send = Math.min((int) size - bytesTotal, Math.min(bytes, (int) size));
           dataOutputStream.write(buffer.array(), 0, to_send);
