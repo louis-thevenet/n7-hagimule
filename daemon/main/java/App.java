@@ -9,27 +9,57 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+/**
+ * Lanceur d'un daemon sur une application.
+ * Launch a daemon application.
+ * usage :
+ *  -h show options.
+ *  -dii  <arg>  define diary ip address.
+ *  -dip  <arg>  define diary port.
+ *  -dai  <arg>  define daemon ip address.
+ *  -dap  <arg>  define daemon port.
+ *  -p    <arg>  define path to include in the download.
+ *  -s           show a summary of the daemon variable
+ */
 public class App {
 
+  /**
+   * Handler for SIGINT. Let the app close cleanly.
+   */
   private static class ShutdownHook implements Runnable {
 
+    /**Deamon of the App. */
     private Daemon d;
 
+    /**
+     * Builder with the deamon of the App.
+     * @param d the daemon.
+     */
     private ShutdownHook(Daemon d) {
       this.d = d;
     }
 
+    /**
+     * Procedure run when SIGINT is thrown.
+     */
     @Override
     public void run() {
-      System.out.println("Shutdown App");
       d.shutdown(true);
+      System.out.println("Shutdown App");
     }
     
   }
 
+  /**Define the home dir of the linux user. */
   static String homeDir = System.getProperty("user.home");
+
+  /**Define the default path where files will be register to diary. */
   static String defaultFilesPath = homeDir + "/Downloads/";
 
+  /**
+   * Create all the options menu for the CLI (Command Line Interface).
+   * @return the options menu.
+   */
   static Options createOptions() {
     Options options = new Options();
 
@@ -56,12 +86,22 @@ public class App {
     return options;
   }
 
+  /**
+   * Exit the App with an error.
+   * @param error
+   */
   static void exitWithError(String error) {
     System.err.println(error);
     System.exit(-1);
 
   }
 
+  /**
+   * Handler of the CLI.
+   * @param args args of the command line.
+   * @return A object Command line with the command line info parsed.
+   * @throws ParseException
+   */
   static CommandLine handleCLI(String[] args) throws ParseException {
     Options options = createOptions();
 
@@ -70,6 +110,11 @@ public class App {
     return cmd;
   }
 
+  /**
+   * Get the file path function of the command line.
+   * @param cmd the command line.
+   * @return the files path to register.
+   */
   static String getFilesPath(CommandLine cmd) {
     String availableFilesPath;
     if (cmd.hasOption("path")) {
@@ -80,19 +125,27 @@ public class App {
     return availableFilesPath;
   }
 
+  /**
+   * Create a Daemon with specification of the command line.
+   * @param cmd command line.
+   * @return a Daemon with the specification.
+   */
   static Daemon createDaemon(CommandLine cmd) {
 
     Daemon daemon = null;
+    // create a Daemon
     try {
       daemon = new Daemon(getFilesPath(cmd));
     } catch (RemoteException e) {
       exitWithError("Failed to create daemon object: " + e);
     }
 
+    // change daemon ip
     if (cmd.hasOption("dai")) {
       daemon.setDaemonAddress(cmd.getOptionValue("dai"));
-
     }
+
+    // change daemon port
     if (cmd.hasOption("dap")) {
       try {
         int port = Integer.parseInt(cmd.getOptionValue("dap"));
@@ -103,20 +156,22 @@ public class App {
       }
     }
 
+    // change the diary ip
     if (cmd.hasOption("dii")) {
       daemon.setDiaryAddress(cmd.getOptionValue("dii"));
-
     }
+
+    // change the diary port
     if (cmd.hasOption("dip")) {
       try {
         int port = Integer.parseInt(cmd.getOptionValue("dip"));
         daemon.setDiaryPort(port);
       } catch (NumberFormatException e) {
         exitWithError(e.toString());
-
       }
     }
 
+    // show summary and stop
     if (cmd.hasOption("s")) {
       daemon.makeSummary();
       System.exit(0);
@@ -125,6 +180,10 @@ public class App {
 
   }
 
+  /**
+   * Main method of the Class.
+   * @param args args of the command line
+   */
   public static void main(String[] args) {
     CommandLine cmd = null;
     try {
@@ -143,10 +202,17 @@ public class App {
     }
     
     Daemon daemon = createDaemon(cmd);
+
+    // Set up the Clean Shutdown
     Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(daemon)));
 
+    // register files into diary
     daemon.notifyDiary();
+
+    // listen for request
     daemon.listen();
+    
+    // start to notify the diary every minutes
     daemon.startNotifying();
   }
 }

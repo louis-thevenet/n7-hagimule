@@ -7,53 +7,85 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 
 /** Daemon that registers available files and answers Download requests. */
 public class Daemon extends UnicastRemoteObject implements FileProvider {
-  HashMap<Integer, String> currentDownloads;
-  File[] availableFiles;
-  String diaryAddress;
-  Integer diaryPort = 8081;
+
+  /** List of files provided by the deamon. */
+  private File[] availableFiles;
+
+  /** The ip address of the diary. */
+  private String diaryAddress;
+
+  /** The port used by the diary. */
+  private Integer diaryPort = 8081;
+
+  /** The number of files currently provided. */
   private Integer fileCurrentlySend = 0;
+
+  /** The Notifyer to diary that the daemon is alive. */
   private AliveNotifyer notifyer;
+
+  /** The thread of the notifyer. */
   private Thread thNotifyer;
 
+  /**
+   * Set the diary adress.
+   * @param diaryAddress the new value
+   */
   public void setDiaryAddress(String diaryAddress) {
     this.diaryAddress = diaryAddress;
   }
 
+  /**
+   * Set the diary port.
+   * @param diaryPort the new value.
+   */
   public void setDiaryPort(Integer diaryPort) {
     this.diaryPort = diaryPort;
   }
 
+  /**
+   * Set the daemon ip address
+   * @param daemonAddress the new value.
+   */
   public void setDaemonAddress(String daemonAddress) {
     this.daemonAddress = daemonAddress;
   }
 
+  /**
+   * Set the deamon port.
+   * @param daemonPort the new value
+   */
   public void setDaemonPort(Integer daemonPort) {
     this.daemonPort = daemonPort;
   }
 
+  /** The final extensions of the stub url to register. */
   final String diaryRegisterEndpoint = "/register";
-
+  
+  /** The final extensions of the stub url to disconnect. */
   private final String diaryDisconnectEndpoint = "/disconnect";
 
+  /** The final extensions of the stub url to notify-alive. */
   private final String diaryStillAliveEndpoint = "/notify-alive";
 
+  /** The daemon ip address. */
   String daemonAddress;
+  /** The daemon port integer. */
   Integer daemonPort = 8082;
+
+  /** The final extensions of the stub url to download. */
   final String daemonDownloadEndpoint = "/download";
 
   /**
-   * Creates a new Daemon object
+   * Creates a new Daemon object.
    * 
    * @param availableFilesPath: Path to the files to make available
    */
   public Daemon(String availableFilesPath) throws RemoteException {
     File availableFilesDir = new File(availableFilesPath);
     availableFiles = availableFilesDir.listFiles();
-    currentDownloads = new HashMap<>();
     try {
       // Defaults to localhost
       String local = InetAddress.getLocalHost().getHostAddress();
@@ -65,7 +97,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   }
 
   /**
-   * Prints a summary of this Daemon settings
+   * Prints a summary of this Daemon settings.
    */
   public void makeSummary() {
     System.out
@@ -87,9 +119,11 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
         "Notifying Diary: " + String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryRegisterEndpoint);
 
     try {
+      // connect the stub
       DiaryDaemon register = (DiaryDaemon) Naming
           .lookup(String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryRegisterEndpoint);
 
+      // register each file
       if (availableFiles == null || availableFiles.length == 0) {
         throw new RuntimeException("No file in this directory");
       }
@@ -100,24 +134,27 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
         }
       }
     } catch (RuntimeException ae) {
-      System.out.println("Failed to register to diary Runtime: " + ae);
+      System.out.println("Failed to register to diary : " + ae);
       ae.printStackTrace();
       System.exit(-1);
     } catch (Exception ae) {
-      System.out.println("Failed to register to diary Exception: " + ae);
+      System.out.println("Failed to register to diary : " + ae);
       System.exit(-1);
     }
   }
 
+  
   @Override
-  public int download(String address, int downloaderPort, String filename, long offset, long size)
+  public int download(String downloaderAddress, int downloaderPort, String filename, long offset, long size)
       throws RemoteException {
-    int port = daemonPort + fileCurrentlySend;
-    System.out.println("Allocated port " + port + " for " + address);
+      // define the send port
+    int port = daemonPort + 1 + fileCurrentlySend;
+    System.out.println("Allocated port " + port + " for " + downloaderAddress);
     System.out.println("Sending " + filename);
     System.out.println("Chunk size " + size);
     System.out.println("Chunk offset " + offset);
 
+    // find the file
     File file = null;
     for (File f : availableFiles) {
       String[] split = f.getPath().split("/");
@@ -128,24 +165,29 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       }
     }
 
+    // check the existence of the file and launch the sender
     if (file == null) {
       throw new RemoteException("File is not available");
     } else {
-      Sender sender = new Sender(file, address, downloaderPort, offset, size, fileCurrentlySend);
+      Sender sender = new Sender(file, downloaderAddress, downloaderPort, offset, size, fileCurrentlySend);
       sender.start();
     }
-    fileCurrentlySend--;
     return port;
   }
 
+  /**
+   * Start to listen request.
+   */
   public void listen() {
     try {
+      // open a listening port
       try {
         LocateRegistry.createRegistry(daemonPort);
       } catch (RemoteException e) {
         LocateRegistry.getRegistry(daemonPort);
       }
       String URL = "//" + daemonAddress + ":" + daemonPort + "/download";
+      // bind the service into the register
       Naming.rebind(URL, (FileProvider) this);
       System.out.println("Listening to requests");
     } catch (Exception e) {
@@ -154,12 +196,18 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     }
   }
 
+  /**
+   * Stop a deamon cleanly.
+   * @param thInterrupt if the notify thread has to be interrupt.
+   */
   public void shutdown(boolean thInterrupt) {
     try {
+      // send a notification to the diary that the deamon disconnect.
       DiaryDaemon register = (DiaryDaemon) Naming
           .lookup(String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryDisconnectEndpoint);
       System.out.println("send disconnect notification");
       register.disconnect(daemonAddress, daemonPort);
+      // interupt the notify thread
       if (thInterrupt) {
         thNotifyer.interrupt();
       }
@@ -173,21 +221,39 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     }
   }
 
+  /**
+   * Start to notify the diary that the deamon is alive.
+   */
   public void startNotifying() {
+    // create the notifyer
     notifyer = new AliveNotifyer(this,
         String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryStillAliveEndpoint);
     thNotifyer = new Thread(notifyer);
+    
+    // start it
     thNotifyer.start();
   }
 
+  /**
+   * Get the Deamon ip address.
+   * @return the deamon ip address
+   */
   public String getDaemonAddress() {
     return daemonAddress;
   }
 
+  /**
+   * Get the Daemon port.
+   * @return the deamon port.
+   */
   public Integer getDaemonPort() {
     return daemonPort;
   }
 
+  /**
+   * Get the notifyer.
+   * @return the notifyer.
+   */
   public AliveNotifyer getNotifyer() {
     return this.notifyer;
   }

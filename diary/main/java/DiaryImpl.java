@@ -98,6 +98,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
 
   @Override
   public List<String> listFiles() {
+    System.out.println("LIST_OF_FILES");
     verifAliveIfNecessary();
     List<String> res = new ArrayList<String>();
     res.addAll(impl.keySet());

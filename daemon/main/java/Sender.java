@@ -6,15 +6,40 @@ import java.io.RandomAccessFile;
 import java.net.Socket;
 
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
+/**
+ * Sender is a Thread charged to send a part of file by a Socket to the serverSocket
+ * gifted in the builder.
+ */
 public class Sender extends Thread {
-  File file;
-  String address;
-  Integer port;
+  /** The file to send. */
+  private File file;
+
+  /** The ip address of the downloader. */
+  private String address;
+
+  /** The port of the downloader where there is a serverSocket listening. */
+  private Integer port;
+
+  /** The offset of the part of file. */
   private long offset;
+  
+  /** The size of the part of file to send. */
   private long size;
+
+  /** The number file send. */
   private Integer fileCSend;
 
+  /**
+   * Builder of a Sender.
+   * @param file the file to send.
+   * @param address the ip address of the downloader.
+   * @param port the port of the downloader.
+   * @param offset the offset of the part of file to send.
+   * @param size the size of the part of file to send.
+   * @param fileCSend the object of the number of file currently send.
+   */
   public Sender(File file, String address, Integer port, long offset, long size, Integer fileCSend) {
     this.file = file;
     this.address = address;
@@ -24,20 +49,32 @@ public class Sender extends Thread {
     this.fileCSend = fileCSend;
   }
 
+  /**
+   * Procedure of the Thread.
+   */
+  @Override
   public void run() {
+    // increment the numbre of file send
     fileCSend++;
     System.out.println("Sending " + file.getName() + " to " + address + ":" + port);
     boolean success = false;
+    // while the daemon can not access to the serverSocket
     while (!success) {
+
       try (Socket socket = new Socket(address, port)) {
 
+        // set up the communication with a dataOuputStream
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
+        // access to the file
         RandomAccessFile randomAccessFile = new RandomAccessFile(file.getAbsolutePath(), "r");
-        var fileInputStream = randomAccessFile.getChannel();
+
+        // set up the communication with a FileChannel
+        FileChannel fileInputStream = randomAccessFile.getChannel();
 
         System.out.println("Sending a total of " + size + " bytes");
 
+        // send the bytes
         int bytes = 0;
         int bytesTotal = 0;
         int bufferSize = 64 * 1024;
@@ -52,6 +89,8 @@ public class Sender extends Thread {
           dataOutputStream.flush();
           bytesTotal += bytes;
         }
+
+        // close communication
         fileInputStream.close();
         dataOutputStream.close();
         fileInputStream.close();
@@ -64,6 +103,7 @@ public class Sender extends Thread {
         System.out.println("Failed to connect to downloader: " + e + "\n Retrying...");
       }
     }
+    // decrement file send
     fileCSend--;
   }
 }
