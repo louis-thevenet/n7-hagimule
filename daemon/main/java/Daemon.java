@@ -147,7 +147,8 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   @Override
   public int download(String downloaderAddress, int downloaderPort, String filename, long offset, long size)
       throws RemoteException {
-      // define the send port
+    // define the send port
+    System.out.println("FCS = " + fileCurrentlySend);
     int port = daemonPort + 1 + fileCurrentlySend;
     System.out.println("Allocated port " + port + " for " + downloaderAddress);
     System.out.println("Sending " + filename);
