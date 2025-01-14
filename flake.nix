@@ -42,6 +42,7 @@
               nativeBuildInputs
               ++ buildInputs
               ++ (with pkgs; [
+                typst
                 jdk21
                 gradle
                 just
