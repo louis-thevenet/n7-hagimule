@@ -214,6 +214,9 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
         this.shutdown(true);
       }
     }
+    for (File f : availableFiles) {
+      lf.add(f);
+    }
     this.setAvailableFiles((File[]) lf.toArray(new File[lf.size()]));
   }
 
