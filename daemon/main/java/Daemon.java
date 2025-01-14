@@ -29,6 +29,29 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   /** The thread of the notifyer. */
   private Thread thNotifyer;
 
+  /** The time to sleep between each buffer sent. */
+  private long bufferDelay = 0;
+
+  public void setAvailableFiles(File[] availableFiles) {
+    this.availableFiles = availableFiles;
+  }
+
+  public void setFileCurrentlySend(Integer fileCurrentlySend) {
+    this.fileCurrentlySend = fileCurrentlySend;
+  }
+
+  public void setNotifyer(AliveNotifyer notifyer) {
+    this.notifyer = notifyer;
+  }
+
+  public void setThNotifyer(Thread thNotifyer) {
+    this.thNotifyer = thNotifyer;
+  }
+
+  public void setBufferDelay(long bufferDelay) {
+    this.bufferDelay = bufferDelay;
+  }
+
   /**
    * Set the diary adress.
    *
@@ -127,11 +150,9 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
 
     try {
       // connect the stub
-      DiaryDaemon register =
-          (DiaryDaemon)
-              Naming.lookup(
-                  String.join(":", "//" + diaryAddress, diaryPort.toString())
-                      + diaryRegisterEndpoint);
+      DiaryDaemon register = (DiaryDaemon) Naming.lookup(
+          String.join(":", "//" + diaryAddress, diaryPort.toString())
+              + diaryRegisterEndpoint);
 
       // register each file
       if (availableFiles == null || availableFiles.length == 0) {
@@ -180,8 +201,8 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     if (file == null) {
       throw new RemoteException("File is not available");
     } else {
-      Sender sender =
-          new Sender(file, downloaderAddress, downloaderPort, offset, size, fileCurrentlySend);
+      Sender sender = new Sender(file, downloaderAddress, downloaderPort, offset, size, fileCurrentlySend,
+          this.bufferDelay);
       sender.start();
     }
     return port;
@@ -214,11 +235,9 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   public void shutdown(boolean thInterrupt) {
     try {
       // send a notification to the diary that the deamon disconnect.
-      DiaryDaemon register =
-          (DiaryDaemon)
-              Naming.lookup(
-                  String.join(":", "//" + diaryAddress, diaryPort.toString())
-                      + diaryDisconnectEndpoint);
+      DiaryDaemon register = (DiaryDaemon) Naming.lookup(
+          String.join(":", "//" + diaryAddress, diaryPort.toString())
+              + diaryDisconnectEndpoint);
       System.out.println("send disconnect notification");
       register.disconnect(daemonAddress, daemonPort);
       System.out.println("Shutdown Daemon");
@@ -236,10 +255,9 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   /** Start to notify the diary that the deamon is alive. */
   public void startNotifying() {
     // create the notifyer
-    notifyer =
-        new AliveNotifyer(
-            this,
-            String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryStillAliveEndpoint);
+    notifyer = new AliveNotifyer(
+        this,
+        String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryStillAliveEndpoint);
     thNotifyer = new Thread(notifyer);
 
     // start it
