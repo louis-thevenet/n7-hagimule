@@ -8,6 +8,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /** Daemon that registers available files and answers Download requests. */
@@ -183,18 +184,10 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   public void notifyChange() {
     List<File> lf = new ArrayList<>();
     for (File f : availableFilesDir.listFiles()) {
-      boolean found = false;
-      for (File f2 : availableFiles) {
-        if (f.getName().equals(f2.getName())) {
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
+      if (!Arrays.stream(availableFiles).anyMatch(x -> x.getName().equals(f.getName()))) {
         lf.add(f);
       }
     }
-
     if (lf.size() > 0) {
       System.out.println(
           "Notifying Diary: "
@@ -221,6 +214,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
         this.shutdown(true);
       }
     }
+    this.setAvailableFiles((File[]) lf.toArray(new File[lf.size()]));
   }
 
   @Override
