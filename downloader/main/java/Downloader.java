@@ -91,7 +91,7 @@ public class Downloader {
       for (Host h : hosts) {
         long offset = i * taskSize;
         if (i == hosts.size() - 1) {
-          jobs.add(new InnerDownloader(h, filename, offset, sizeOfFile - offset, channel));
+          jobs.add(new InnerDownloader(h,i, filename, offset, sizeOfFile - offset, channel));
           System.out.println(
               "Host "
                   + h.getIp()
@@ -103,7 +103,7 @@ public class Downloader {
                   + (offset + sizeOfFile - offset + 1));
         } else {
 
-          jobs.add(new InnerDownloader(h, filename, offset, taskSize, channel));
+          jobs.add(new InnerDownloader(h,i, filename, offset, taskSize, channel));
           System.out.println(
               "Host " + h.getIp() + " : " + i + " : " + offset + " -> " + (offset + taskSize));
         }
@@ -136,6 +136,9 @@ public class Downloader {
     /** The offset of the part. */
     private long offset;
 
+    /** The job ID. */
+    private int id;
+
     /** The size of the part. */
     private long size;
 
@@ -154,20 +157,21 @@ public class Downloader {
      * @param size the size of the part.
      * @param output the output.
      */
-    public InnerDownloader(Host h, String filename, long offset, long size, FileChannel output) {
+    public InnerDownloader(Host h,int i, String filename, long offset, long size, FileChannel output) {
       this.h = h;
       this.offset = offset;
       this.size = size;
       this.output = output;
       this.filename = filename;
+      this.id=i;
     }
 
     /** Procedure of the Thread. */
     @Override
     public void run() {
-      long worker_id = this.offset / (this.size - 1);
+      long worker_id = this.id;
       String id_str = "[" + worker_id + "] ";
-      int port = 4040 + (int) worker_id;
+      int port = 45654 + (int) worker_id;
       try {
         // Request a download port from a host
         FileProvider stub =
