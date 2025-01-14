@@ -16,36 +16,15 @@ for i in $(seq 1 15); do
 			fnp=`basename $p`
 			echo "copie de $fnp dans /work"
 			bash -c "ssh $machine cp -r '$p /work/$fnp'"
-			bash -c "ssh $machine ls '/work/$fnp'"
 			echo
 			jarpath=$4/daemon/build/libs/daemon-all.jar
 			mode="Daemon"
-			path="/work/$fnp
+			path="/work/$fnp"
 		fi
 
 		echo machine=$machine
 		echo "Lancement en arrière plan de $mode"
 		echo
 		bash -c "ssh $machine java -jar $jarpath -dii $2 -p $path &"
-	fi
-done
-echo nettoyage
-for i in $(seq 1 15); do
-	if [ $i != 12 ]; then
-		if [ $i -gt 9 ]; then
-			machine=c304-$i
-		else
-			machine=c304-0$i
-		fi
-		echo machine=$machine
-		echo
-
-		if [ $1 == "downloader" ]; then
-			p="$3"
-		else
-			p="$3"
-		fi
-		echo "suppression en arrière plan de /work/$p"
-		bash -c "ssh $machine rm -r /work/$p &"
 	fi
 done

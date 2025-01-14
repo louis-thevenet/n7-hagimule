@@ -24,14 +24,14 @@ You need java 21 and gradle.
 
 `source ./aliases.sh` : crée un alias pour lancer directement avec le nom des fichiers de l'application.
 
-
+<!-- 
 `./launch_c304.sh <[daemon|downloader]> <ip diary> <filename> <pathToHagimule>` : permet de lancer sur toutes les machines de la salle C304 le scripte :
     - soit daemon : dans ce cas filename désigne le dossier qu'on fournit au diary en chemin absolue.
     - soit downloader : dans ce cas filename est un fichier disponible dans le diary.
 pathToHagimule est le chemin du HOME à hagimule.
 
-Par exemple : `./launch_c304.sh daemon truite ~/Downloads ~/Documents/2A/Intergiciel/hagimule` lance des daemons sur toute les machines de la salle C304
-connecté au Diary Préalablement lancé sur truite.
+Par exemple : `./launch_c304.sh daemon truite Downloads ~/Documents/2A/Intergiciel/hagimule` lance des daemons sur toute les machines de la salle C304
+connecté au Diary Préalablement lancé sur truite. Cette fonction est dangereuse  -->
 
 
 `./testdiff.sh <filename> <dir>` : affiche la différence entre le fichier `filename` dans `/work` et le fichier `filename` dans le dossier de référence `dir`.
