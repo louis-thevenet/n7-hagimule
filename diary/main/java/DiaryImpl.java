@@ -120,8 +120,9 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
       h = new Host(ip, port);
       allTheHost.add(h);
     }
+    
     // add the file to the host in the list
-    h.addFile(file);
+    boolean modif = h.addFile(file);
 
     // get the list for the file
     List<Host> l = impl.get(file);
@@ -132,7 +133,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
       l.add(h);
       impl.put(file, l);
       sizes.put(file, size);
-    } else {
+    } else if (modif) {
       // check if the size of the file is the same
       if (sizes.get(file) == size) {
         l.add(h);
