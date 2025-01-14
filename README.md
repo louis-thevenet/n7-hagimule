@@ -1,36 +1,26 @@
-# hagimule
+# Hagimule
 
-## To Do
+## Run
 
-- [ ] Diary
+### Build
 
-  - [x] Les daemon peut s'enregistrer
-    - [ ] Virer les doublons
-  - [ ] Les daemons peuvent se retirer
+You need java 21 and gradle.
 
-  - [x] Les downloader peuvent demander la liste des fichiers
-  - [x] Les downloader peuvent demander la liste des hosts pour un fichier
-    - [ ] Ici on devrait ping les daemons avant d'envoyer la liste et virer ceux qui répondent plus
+`gradle shadowJar` will build the jars with their dependencies.
 
-- [ ] Daemon
+### Start Diary
 
-  - [ ] Implémenter `download`
-  - [x] S'enregistre auprès du Diary avec les fichiers rendus disponibles
+`java -jar diary/build/libs/diary-all.jar -p <port>`
 
-- [ ] Downloader
-  - [ ] Implémenter le téléchargement
-    - [ ] Fournir plusieurs méthodes de téléchargement
-      - Depuis un seul daemon
-      - Diviser la charge de manière égale
-      - Faire des petits bouts et redistribuer selon la vitesse des daemon (théoriquement le mieux des trois ?)
-- [ ] Bonus
-  - [ ] Vérifier cohérence des adresses IP données en argument
-    - En implémentant une méthode _ping_ par exemple
-    - Utiliser une classe `Address` pour s'assurer de sa bonne forme au lieu de `String`
-  - [ ] Vérifier que les données sont bien celles attendues (pas de perte ou de modifications malveillantes par exemple)
-        Avec un checksum que le Diary conserve
+### Start Daemons
 
-## script usage 
+`java -jar daemon/build/libs/daemon-all.jar -p PATH/TO/DIR/ -dip <diary port>`
+
+### Download files
+
+`java -jar downloader/build/libs/downloader-all.jar -dip <diary_port>`
+
+## script usage RESTE A FAIRE
 
 `./aliases.sh`
 
