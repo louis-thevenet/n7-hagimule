@@ -5,7 +5,6 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -14,9 +13,16 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+/** App launch a Diary and handle the command line. */
 public class App {
-  public static int default_port = 8081;
+  /** The default port for a diary. */
+  public static final int defaultPort = 8081;
 
+  /**
+   * Create all the options menu for the CLI (Command Line Interface).
+   *
+   * @return the options menu.
+   */
   public static Options create_options() {
     Options options = new Options();
 
@@ -33,12 +39,23 @@ public class App {
     return options;
   }
 
-  static void exit_with_error(String error) {
+  /**
+   * Exit the App with an error.
+   *
+   * @param error the error message.
+   */
+  static void exitWithError(String error) {
     System.err.println(error);
     System.exit(-1);
-
   }
 
+  /**
+   * Handler of the CLI.
+   *
+   * @param args args of the command line.
+   * @return A object Command line with the command line info parsed.
+   * @throws ParseException if the parse failed.
+   */
   public static CommandLine handleCLI(String[] args) throws ParseException {
     Options options = create_options();
 
@@ -48,9 +65,16 @@ public class App {
     return cmd;
   }
 
+  /**
+   * Main method of the Class.
+   *
+   * @param args args of the command line
+   */
   public static void main(String[] args) {
+    // create a logger
     Logger logger = java.util.logging.Logger.getLogger("Diary");
 
+    // handle command line
     CommandLine cmd = null;
     try {
       cmd = handleCLI(args);
@@ -67,15 +91,18 @@ public class App {
       formatter.printHelp("diary", create_options());
       return;
     }
-    int port = default_port;
+
+    // define the port to use
+    int port = defaultPort;
     if (cmd.hasOption("p")) {
       try {
         port = Integer.parseInt(cmd.getOptionValue("p"));
       } catch (NumberFormatException e) {
-        exit_with_error(e.toString());
+        exitWithError(e.toString());
       }
     }
 
+    // define the debug mode
     if (cmd.hasOption("d")) {
       logger.setLevel(Level.ALL);
     }
@@ -87,50 +114,51 @@ public class App {
       try {
         LocateRegistry.getRegistry(port);
       } catch (RemoteException e1) {
-        exit_with_error("Could not get or create registry: " + e.toString());
+        exitWithError("Could not get or create registry: " + e.toString());
       }
     }
 
+    // launch a Diary
     DiaryImpl diary = null;
     try {
       diary = new DiaryImpl();
       diary.setLogger(logger);
+
+      // set address
       if (cmd.hasOption("i")) {
         String address = cmd.getOptionValue("i");
         diary.setAddress(address);
       }
     } catch (RemoteException e) {
-      exit_with_error("Couldn't initialize Diary: " + e.toString());
+      exitWithError("Couldn't initialize Diary: " + e.toString());
     }
 
     try {
       System.setProperty("jave.rmi.server.hostname", diary.address);
       String URL = "//" + diary.address + ":" + port + "/register";
-      // Register the object with the naming service
-      Naming.rebind(URL, (DiaryDaemon) diary);
 
+      // Register the object with the naming service to register file.
+      Naming.rebind(URL, (DiaryDaemon) diary);
       logger.info("Diary bound in registry Daemon: " + URL);
 
+      // Register the object with the naming service to disconnect a daemon
       URL = "//" + diary.address + ":" + port + "/disconnect";
-      // Register the object with the naming service
       Naming.rebind(URL, (DiaryDaemon) diary);
-
       logger.info("Diary bound in registry Daemon: " + URL);
 
+      // Register the object with the naming service to notify a Daemon is alive
       URL = "//" + diary.address + ":" + port + "/notify-alive";
-      // Register the object with the naming service
       Naming.rebind(URL, (DiaryDaemon) diary);
-
       logger.info("Diary bound in registry Daemon: " + URL);
 
+      // Register the object with the naming service to request a file.
       URL = "//" + diary.address + ":" + port + "/request";
-      // Register the object with the naming service
       Naming.rebind(URL, (DiaryDownloader) diary);
       logger.info("Diary bound in registry Downloader: " + URL);
 
       logger.info("Start listening ...");
     } catch (Exception e) {
-      exit_with_error("Server exception: " + e.toString());
+      exitWithError("Server exception: " + e.toString());
     }
   }
 }

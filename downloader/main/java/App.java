@@ -2,17 +2,19 @@ package main.java;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
 
+/** App launch a Downloader app. */
 public class App {
-  public static int defaultPort = 8081;
+
+  /** The default port number for the app */
+  public static final int defaultPort = 8081;
 
   /**
    * Create options in the commande line.
@@ -26,9 +28,12 @@ public class App {
     Option ls = new Option("l", "list", false, "Request a list of available files");
 
     Option pathOpt = new Option("p", "path", true, "Path to store downloaded files");
-    Option downloaderAddressOpt = new Option("doi", "downloader-ip", true, "Address to use to download files");
-    Option diaryAddressOpt = new Option("dii", "diary-ip", true, "Address to use to register files to the diary");
-    Option diaryPortOpt = new Option("dip", "diary-port", true, "Port to use to register files to the diary");
+    Option downloaderAddressOpt =
+        new Option("doi", "downloader-ip", true, "Address to use to download files");
+    Option diaryAddressOpt =
+        new Option("dii", "diary-ip", true, "Address to use to register files to the diary");
+    Option diaryPortOpt =
+        new Option("dip", "diary-port", true, "Port to use to register files to the diary");
 
     options.addOption(help);
     options.addOption(ls);
@@ -40,10 +45,14 @@ public class App {
     return options;
   }
 
-  static void exit_with_error(String error) {
+  /**
+   * Stop the program.
+   *
+   * @param error the string of the error.
+   */
+  static void exitWithError(String error) {
     System.err.println(error);
     System.exit(-1);
-
   }
 
   /**
@@ -88,18 +97,17 @@ public class App {
       try {
         return cmd.getOptionValue("dii");
       } catch (Exception e) {
-        exit_with_error("Could not retrieve cli argument: " + e);
+        exitWithError("Could not retrieve cli argument: " + e);
       }
       try {
         return "//" + InetAddress.getLocalHost().getHostAddress();
       } catch (UnknownHostException e2) {
-        exit_with_error("Could not retrieve local address: " + e2);
+        exitWithError("Could not retrieve local address: " + e2);
       }
     }
-    exit_with_error("No address found for dirary");
+    exitWithError("No address found for dirary");
     return null;
   }
-
 
   /**
    * Main function.
@@ -127,19 +135,16 @@ public class App {
 
     if (cmd.hasOption("dii")) {
       dl.setDiaryAddress(cmd.getOptionValue("dii"));
-
     }
     if (cmd.hasOption("doi")) {
       dl.setDownloaderAddress(cmd.getOptionValue("doi"));
-
     }
     if (cmd.hasOption("dip")) {
       try {
         int port = Integer.parseInt(cmd.getOptionValue("dip"));
         dl.setDiaryPort(port);
       } catch (NumberFormatException e) {
-        exit_with_error(e.toString());
-
+        exitWithError(e.toString());
       }
     }
 
@@ -154,8 +159,6 @@ public class App {
     final String[] filesToDownload = cmd.getArgs();
     for (String f : filesToDownload) {
       dl.download(f);
-
     }
-
   }
 }
