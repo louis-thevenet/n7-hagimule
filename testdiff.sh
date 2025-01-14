@@ -7,6 +7,6 @@ for i in $(seq 1 15); do
 		fi
 		echo machine=$machine
 
-		bash -c "ssh $machine diff /work/$1 Downloads/$1"
+		bash -c "ssh $machine diff /work/$1 $2/$1"
 	fi
 done
