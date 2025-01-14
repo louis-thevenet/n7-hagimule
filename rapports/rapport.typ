@@ -161,6 +161,9 @@ Les `FileChannel` nous ont fait passer de 29s à 12s pour un fichier de 1Gb tél
 == Rapport du 10/01
 Timothé a implémenté la gestion des daemons déconnectés. Les daemons envoient des _battements de coeur_ toutes les 80s, si le Diary ne reçoit rien pendant 85s, le daemons est retiré des hôtes enregistrés.
 
+== Rapport du 14/01
+On a implémenté l'ajout dynamique de fichiers aux daemons.
+
 #figure(
   caption: "Temps de téléchargment en fonction du nombre de démons avec 10ms de délai tous les 64Ko (10 itérations par point)",
 )[

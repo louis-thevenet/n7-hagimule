@@ -42,7 +42,7 @@ public class AliveNotifyer implements Runnable {
         // send notification
         System.out.println("Send notification alive");
         stillUsed = register.notifyAlive(daemon.getDaemonAddress(), daemon.getDaemonPort());
-
+        daemon.notifyChange();
         // wait 80 s
         Thread.sleep(80_000);
       }

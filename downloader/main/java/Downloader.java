@@ -91,7 +91,7 @@ public class Downloader {
       for (Host h : hosts) {
         long offset = i * taskSize;
         if (i == hosts.size() - 1) {
-          jobs.add(new InnerDownloader(h,i, filename, offset, sizeOfFile - offset, channel));
+          jobs.add(new InnerDownloader(h, i, filename, offset, sizeOfFile - offset, channel));
           System.out.println(
               "Host "
                   + h.getIp()
@@ -103,7 +103,7 @@ public class Downloader {
                   + (offset + sizeOfFile - offset + 1));
         } else {
 
-          jobs.add(new InnerDownloader(h,i, filename, offset, taskSize, channel));
+          jobs.add(new InnerDownloader(h, i, filename, offset, taskSize, channel));
           System.out.println(
               "Host " + h.getIp() + " : " + i + " : " + offset + " -> " + (offset + taskSize));
         }
@@ -157,13 +157,14 @@ public class Downloader {
      * @param size the size of the part.
      * @param output the output.
      */
-    public InnerDownloader(Host h,int i, String filename, long offset, long size, FileChannel output) {
+    public InnerDownloader(
+        Host h, int i, String filename, long offset, long size, FileChannel output) {
       this.h = h;
       this.offset = offset;
       this.size = size;
       this.output = output;
       this.filename = filename;
-      this.id=i;
+      this.id = i;
     }
 
     /** Procedure of the Thread. */

@@ -7,12 +7,18 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /** Daemon that registers available files and answers Download requests. */
 public class Daemon extends UnicastRemoteObject implements FileProvider {
 
   /** List of files provided by the deamon. */
   private File[] availableFiles;
+
+  /** File of the directory. */
+  private File availableFilesDir;
 
   /** The ip address of the diary. */
   private String diaryAddress;
@@ -98,10 +104,10 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   private final String diaryStillAliveEndpoint = "/notify-alive";
 
   /** The daemon ip address. */
-  String daemonAddress;
+  private String daemonAddress;
 
   /** The daemon port integer. */
-  Integer daemonPort = 8082;
+  private Integer daemonPort = 8082;
 
   /** The final extensions of the stub url to download. */
   final String daemonDownloadEndpoint = "/download";
@@ -112,7 +118,7 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
    * @param availableFilesPath: Path to the files to make available
    */
   public Daemon(String availableFilesPath) throws RemoteException {
-    File availableFilesDir = new File(availableFilesPath);
+    this.availableFilesDir = new File(availableFilesPath);
     availableFiles = availableFilesDir.listFiles();
     try {
       // Defaults to localhost
@@ -150,9 +156,11 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
 
     try {
       // connect the stub
-      DiaryDaemon register = (DiaryDaemon) Naming.lookup(
-          String.join(":", "//" + diaryAddress, diaryPort.toString())
-              + diaryRegisterEndpoint);
+      DiaryDaemon register =
+          (DiaryDaemon)
+              Naming.lookup(
+                  String.join(":", "//" + diaryAddress, diaryPort.toString())
+                      + diaryRegisterEndpoint);
 
       // register each file
       if (availableFiles == null || availableFiles.length == 0) {
@@ -170,8 +178,49 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     } catch (Exception ae) {
       System.out.println("Failed to register to diary Exception: " + ae);
       this.shutdown(true);
-
     }
+  }
+
+  /** Registers each new files to be made available to the Diary. */
+  public void notifyChange() {
+    List<File> lf = new ArrayList<>();
+    for (File f : availableFilesDir.listFiles()) {
+      if (!Arrays.stream(availableFiles).anyMatch(x -> x.getName().equals(f.getName()))) {
+        lf.add(f);
+      }
+    }
+    if (lf.size() > 0) {
+      System.out.println(
+          "Notifying Diary: "
+              + String.join(":", "//" + diaryAddress, diaryPort.toString())
+              + diaryRegisterEndpoint);
+      try {
+        // connect the stub
+        DiaryDaemon register =
+            (DiaryDaemon)
+                Naming.lookup(
+                    String.join(":", "//" + diaryAddress, diaryPort.toString())
+                        + diaryRegisterEndpoint);
+
+        // register each file
+        for (File f : lf) {
+          if (f.isFile()) {
+            System.out.println("Registering: " + f.getName());
+            register.registerFile(daemonAddress, daemonPort, f.getName(), f.length());
+          }
+        }
+      } catch (RuntimeException ae) {
+        System.out.println("Failed to register to diary Runtime: " + ae);
+        this.shutdown(true);
+      } catch (Exception ae) {
+        System.out.println("Failed to register to diary Exception: " + ae);
+        this.shutdown(true);
+      }
+    }
+    for (File f : availableFiles) {
+      lf.add(f);
+    }
+    this.setAvailableFiles((File[]) lf.toArray(new File[lf.size()]));
   }
 
   @Override
@@ -201,8 +250,15 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
     if (file == null) {
       throw new RemoteException("File is not available");
     } else {
-      Sender sender = new Sender(file, downloaderAddress, downloaderPort, offset, size, fileCurrentlySend,
-          this.bufferDelay);
+      Sender sender =
+          new Sender(
+              file,
+              downloaderAddress,
+              downloaderPort,
+              offset,
+              size,
+              fileCurrentlySend,
+              this.bufferDelay);
       sender.start();
     }
     return port;
@@ -235,9 +291,11 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   public void shutdown(boolean thInterrupt) {
     try {
       // send a notification to the diary that the deamon disconnect.
-      DiaryDaemon register = (DiaryDaemon) Naming.lookup(
-          String.join(":", "//" + diaryAddress, diaryPort.toString())
-              + diaryDisconnectEndpoint);
+      DiaryDaemon register =
+          (DiaryDaemon)
+              Naming.lookup(
+                  String.join(":", "//" + diaryAddress, diaryPort.toString())
+                      + diaryDisconnectEndpoint);
       System.out.println("send disconnect notification");
       register.disconnect(daemonAddress, daemonPort);
       System.out.println("Shutdown Daemon");
@@ -255,9 +313,10 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
   /** Start to notify the diary that the deamon is alive. */
   public void startNotifying() {
     // create the notifyer
-    notifyer = new AliveNotifyer(
-        this,
-        String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryStillAliveEndpoint);
+    notifyer =
+        new AliveNotifyer(
+            this,
+            String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryStillAliveEndpoint);
     thNotifyer = new Thread(notifyer);
 
     // start it
@@ -289,5 +348,23 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
    */
   public AliveNotifyer getNotifyer() {
     return this.notifyer;
+  }
+
+  /**
+   * Get the directory.
+   *
+   * @return the directory.
+   */
+  public File getAvailableFilesDir() {
+    return availableFilesDir;
+  }
+
+  /**
+   * Get the list of files provided.
+   *
+   * @return the lists.
+   */
+  public File[] getAvailableFiles() {
+    return availableFiles;
   }
 }

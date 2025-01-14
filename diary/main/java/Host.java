@@ -87,14 +87,16 @@ public class Host implements Serializable {
    *
    * @param nf the new filename.
    */
-  public void addFile(String nf) {
+  public boolean addFile(String nf) {
     if (nf == null || nf.length() == 0) {
       throw new IllegalArgumentException("args failed");
     }
     if (files.contains(nf)) {
-      System.out.println("the file " + nf + " already exists.");
+      // System.out.println("the file " + nf + " already exists.");
+      return false;
     } else {
       files.add(nf);
+      return true;
     }
   }
 
