@@ -120,7 +120,7 @@ public class DiaryImpl extends UnicastRemoteObject implements DiaryDownloader, D
       h = new Host(ip, port);
       allTheHost.add(h);
     }
-    
+
     // add the file to the host in the list
     boolean modif = h.addFile(file);
 

@@ -10,12 +10,9 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
- * Lanceur d'un daemon sur une application. Launch a daemon application. usage :
- * -h show options.
- * -dii <arg> define diary ip address. -dip <arg> define diary port. -dai <arg>
- * define daemon ip
- * address. -dap <arg> define daemon port. -p <arg> define path to include in
- * the download. -s show
+ * Lanceur d'un daemon sur une application. Launch a daemon application. usage : -h show options.
+ * -dii <arg> define diary ip address. -dip <arg> define diary port. -dai <arg> define daemon ip
+ * address. -dap <arg> define daemon port. -p <arg> define path to include in the download. -s show
  * a summary of the daemon variable
  */
 public class App {
@@ -58,21 +55,27 @@ public class App {
     Options options = new Options();
 
     Option help = new Option("h", "help", false, "Print this help message");
-    Option summaryOpt = new Option(
-        "s",
-        "summary",
-        false,
-        "Prints a summary of this daemon settings with current arguments");
+    Option summaryOpt =
+        new Option(
+            "s",
+            "summary",
+            false,
+            "Prints a summary of this daemon settings with current arguments");
 
     Option pathOpt = new Option("p", "path", true, "Path to files to make available");
 
-    Option daemonAddressOpt = new Option("dai", "daemon-ip", true, "Address to use to receive download requests");
-    Option daemonPortOpt = new Option("dap", "daemon-port", true, "Port to use to receive download requests");
+    Option daemonAddressOpt =
+        new Option("dai", "daemon-ip", true, "Address to use to receive download requests");
+    Option daemonPortOpt =
+        new Option("dap", "daemon-port", true, "Port to use to receive download requests");
 
-    Option diaryAddressOpt = new Option("dii", "diary-ip", true, "Address to use to register files to the diary");
-    Option diaryPortOpt = new Option("dip", "diary-port", true, "Port to use to register files to the diary");
+    Option diaryAddressOpt =
+        new Option("dii", "diary-ip", true, "Address to use to register files to the diary");
+    Option diaryPortOpt =
+        new Option("dip", "diary-port", true, "Port to use to register files to the diary");
 
-    Option daemonBufferDelay = new Option("t", "buffer-delat", true, "Time to sleep between each buffer sent");
+    Option daemonBufferDelay =
+        new Option("t", "buffer-delat", true, "Time to sleep between each buffer sent");
 
     options.addOption(help);
     options.addOption(pathOpt);

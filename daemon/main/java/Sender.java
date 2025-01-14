@@ -8,8 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 /**
- * Sender is a Thread charged to send a part of file by a Socket to the
- * serverSocket gifted in the
+ * Sender is a Thread charged to send a part of file by a Socket to the serverSocket gifted in the
  * builder.
  */
 public class Sender extends Thread {
@@ -37,16 +36,22 @@ public class Sender extends Thread {
   /**
    * Builder of a Sender.
    *
-   * @param file        the file to send.
-   * @param address     the ip address of the downloader.
-   * @param port        the port of the downloader.
-   * @param offset      the offset of the part of file to send.
-   * @param size        the size of the part of file to send.
-   * @param fileCSend   the object of the number of file currently send.
+   * @param file the file to send.
+   * @param address the ip address of the downloader.
+   * @param port the port of the downloader.
+   * @param offset the offset of the part of file to send.
+   * @param size the size of the part of file to send.
+   * @param fileCSend the object of the number of file currently send.
    * @param bufferDelay the time to sleep between each buffer sent.
    */
   public Sender(
-      File file, String address, Integer port, long offset, long size, Integer fileCSend, long bufferDelay) {
+      File file,
+      String address,
+      Integer port,
+      long offset,
+      long size,
+      Integer fileCSend,
+      long bufferDelay) {
     this.file = file;
     this.address = address;
     this.port = port;
