@@ -46,20 +46,19 @@ public class AliveNotifyer implements Runnable {
         // wait 80 s
         Thread.sleep(80_000);
       }
+      System.out.println("Start daemon.disconnect()");
 
-      // here the deamon is not use by the diary and will not be anymore so we shutdown it
-      System.out.println("Shutdown daemon start");
-      daemon.shutdown(false);
     } catch (InterruptedException ae) {
       // The thread is interrupted when the app is shutdown
       System.out.println("Shutdown Notifyer");
 
     } catch (RuntimeException ae) {
-      System.out.println("Failed to notify diary with a RuntimeException: " + ae);
+      System.out.println("Failed to notify diary alive Runtime: " + ae);
 
     } catch (Exception ae) {
-      System.out.println("Failed to notify diary Exception: " + ae);
+      System.out.println("Failed to notify diary alive Exception: " + ae);
     }
+    daemon.shutdown(false);
   }
 
   /**
