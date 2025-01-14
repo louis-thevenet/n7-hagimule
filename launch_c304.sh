@@ -10,20 +10,23 @@ for i in $(seq 1 15); do
 			jarpath=$4/downloader/build/libs/downloader-all.jar
 			p=" $3"
 			mode="Downloader"
+			path="/work/ $p"
 		else
 			p="$3"
-			echo "copie de $p dans /work"
-			bash -c "ssh $machine cp -r '$p /work/'"
 			fnp=`basename $p`
+			echo "copie de $fnp dans /work"
+			bash -c "ssh $machine cp -r '$p /work/$fnp'"
+			bash -c "ssh $machine ls '/work/$fnp'"
 			echo
 			jarpath=$4/daemon/build/libs/daemon-all.jar
 			mode="Daemon"
+			path="/work/$fnp
 		fi
 
 		echo machine=$machine
 		echo "Lancement en arrière plan de $mode"
 		echo
-		bash -c "ssh $machine java -jar $jarpath -dii $2 -p /work/$fnp$p &"
+		bash -c "ssh $machine java -jar $jarpath -dii $2 -p $path &"
 	fi
 done
 echo nettoyage
