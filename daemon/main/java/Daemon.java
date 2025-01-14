@@ -101,11 +101,10 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
       }
     } catch (RuntimeException ae) {
       System.out.println("Failed to register to diary Runtime: " + ae);
-      ae.printStackTrace();
-      System.exit(-1);
+      this.shutdown(true);
     } catch (Exception ae) {
       System.out.println("Failed to register to diary Exception: " + ae);
-      System.exit(-1);
+      this.shutdown(true);
     }
   }
 
@@ -160,16 +159,15 @@ public class Daemon extends UnicastRemoteObject implements FileProvider {
           .lookup(String.join(":", "//" + diaryAddress, diaryPort.toString()) + diaryDisconnectEndpoint);
       System.out.println("send disconnect notification");
       register.disconnect(daemonAddress, daemonPort);
-      if (thInterrupt) {
-        thNotifyer.interrupt();
-      }
       System.out.println("Shutdown Daemon");
     } catch (RuntimeException ae) {
-      System.out.println("Failed to register to diary Runtime: " + ae.getCause());
-      System.exit(-1);
+      System.out.println("Failed to shutdown App Runtime: " + ae);
     } catch (Exception ae) {
-      System.out.println("Failed to register to diary Exception: " + ae);
-      System.exit(-1);
+      System.out.println("Failed to shutdown App Exception: " + ae);
+    } finally {
+      if (thInterrupt && thNotifyer != null) {
+        thNotifyer.interrupt();
+      }
     }
   }
 
